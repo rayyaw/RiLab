@@ -50,4 +50,10 @@ struct Env {
      * @return false otherwise
      */
     bool isReservedName(string name);
+
+    // Check if the name is a valid TypeName or TypeVar.
+    bool isTypeName(string name);
+
+    // Check if the name is an operator name.
+    bool isOpName(string name);
 };

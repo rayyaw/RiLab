@@ -17,9 +17,12 @@ using namespace rules;
 
 size_t rule_id = 0;
 
-RuleTree *parseRule(string command, 
-    map<string, string> variables, set<string> type_vars, 
-    map<string, vector<string>> op_names, set<string> type_names) {
+RuleTree *parseRule(string command, Env *env) {
+    map<string, string> variables = env -> variables;
+    set<string> type_vars = env -> type_vars;
+
+    map<string, vector<string>> op_names = env -> operators;
+    set<string> type_names = env -> type_names;
 
     vector<string> command_parts = splitCommand(command);
 
@@ -50,7 +53,7 @@ RuleTree *parseRule(string command,
 
         // Check that the function argument count is correct
         if (op_params.size() != command_parts.size()) {
-            throw "ParseException: Invalid number of arguments passed to function " + command_parts[0];
+            throw "IllegalArgumentException: Invalid number of arguments passed to function " + command_parts[0];
         }
 
         current -> rule_type = op_params[0];
@@ -64,15 +67,8 @@ RuleTree *parseRule(string command,
             }
 
             current -> sub_rules.push_back(
-                parseRule(next_command, variables, type_vars, op_names, type_names)
+                parseRule(next_command, env)
             );
-
-            string cur_type = current -> sub_rules[i - 1] -> rule_type;
-
-            // Type check the parameters. _ is a wildcard that matches anything.
-            if (cur_type != op_params[i] && op_params[i] != "_") {
-                throw "ParseException: Type mismatch in operation at " + cur_type;
-            }
         }
     }
 
@@ -142,15 +138,102 @@ pair<string, string> parseVarDeclare(string command, Env *env) {
     }
 
     // Check that the variable type is valid
-    if (command_parts[1] == "_" || command_parts[1] == "Int" || 
-        command_parts[1] == "Bool" || command_parts[1] == "Float" ||
-    env -> type_vars.find(command_parts[1]) != env -> type_vars.end() ||
-    env -> type_names.find(command_parts[1]) != env -> type_names.end()) {
+    if (env -> isTypeName(command_parts[1])) {
         return {command_parts[0], command_parts[1]};
     }
 
     throw "IllegalArgumentException: No TypeName or TypeVar to match type " + command_parts[1]; 
 
+}
+
+string parseTypeVarDeclare(string command, Env *env) {
+
+    // Check that the variable name isn't taken
+    if (env -> isReservedName(command)) {
+        throw "IllegalArgumentException: This name is already taken at " + command;
+    }
+
+    return command;
+}
+
+pair<string, vector<string>> parseOpDeclare(string command, Env *env) {
+    vector<string> command_parts = splitCommand(command);
+
+    if (command_parts.size() < 2) {
+        throw "ParseException: Invalid number of arguments were passed to 'declare operation' (expected 2 or more)";
+    }
+
+    // Check that the variable name isn't taken
+    if (env -> isReservedName(command_parts[0])) {
+        throw "IllegalArgumentException: This name is already taken at " + command_parts[0];
+    }
+
+    pair<string, vector<string>> out = pair<string,vector<string>>();
+    out.first = command[0];
+    out.second = vector<string>();
+
+    // Check that the variable type is valid
+    for (size_t i = 1; i < command_parts.size(); i++) {
+        if (!env -> isTypeName(command_parts[i])) {
+            throw "IllegalArgumentException: No TypeName or TypeVar to match type " + command_parts[i];
+            
+        }
+
+        out.second.push_back(command_parts[i]);
+    }
+
+    return out;
+
+}
+
+map<string, string> typeCheck(RuleTree *rule, Env *env, map<string, string> bound_types) {
+    // If no operator, return
+    if (rule -> rule_value != "") {
+        return bound_types;
+    }
+
+    vector<string> cur_types = env -> operators[rule -> rule_op];
+
+    // Recursive Case: Type Check subrules
+    for (size_t i = 0; i < rule -> sub_rules.size(); i++) {
+        RuleTree *child = rule -> sub_rules[i];
+        bound_types = typeCheck(child, env, bound_types);
+
+        string cur_type = cur_types[i + 1];
+
+        bool is_valid = false;
+
+        // Expected Type = Actual Type
+        if (child -> rule_type == cur_type) is_valid = true;
+
+        // Expected Type = _ (match anything)
+        if (cur_type == "_") is_valid = true;
+
+        // Type is a TypeVar.
+        if (env -> type_vars.find(cur_type) != env -> type_vars.end()) {
+            // If unbound, add to map. If bound, check valid.
+            if (bound_types.find(cur_type) == bound_types.end()) {
+                bound_types[cur_type] = child -> rule_type;
+                is_valid = true;
+            } else if (bound_types[cur_type] == child -> rule_type) {
+                is_valid = true;
+            }
+        }
+
+        if (!is_valid) {
+            throw "IllegalArgumentException: Type matching failed.";
+        }
+
+
+    }
+
+    if (bound_types.find(cur_types[0]) != bound_types.end()) {
+        rule -> rule_type = bound_types[cur_types[0]];
+    } else {
+        rule -> rule_type = cur_types[0];
+    }
+
+    return bound_types;
 }
 
 vector<string> splitCommand(string command) {

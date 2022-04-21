@@ -14,37 +14,15 @@ using std::string;
 using std::pair;
 using std::vector;
 
-// Valid types of statements.
-enum StatementType {
-    ASK,
-
-    DECLARE_RULE,
-    DECLARE_FUNC,
-    DECLARE_TYPE,
-
-    DECLARE_TYPEVAR,
-    DECLARE_VAR,
-
-    UNKNOWN
-};
-
-/**
- * @brief Struct containing a single statement (user input).
- * Contains the type of the statement as well as its value.
- */
-struct Statement {
-    StatementType type;
-    void *value;
-};
-
+// TODO
 /**
  * @brief Parse a user's command into a Statement.
  * 
  * @param command The command to parse. Use () for grouping and spaces for spacing.
  * @param env The environment to modify, including all variable types, rules, etc.
- * @return Statement* A statement corresponding to that rule.
+ * @return string - The string to output to the console.
  */
-Statement *parseStatement(string command, Env env);
+string *parseStatement(string command, Env *env);
 
 // Helper Functions and Methods
 
@@ -52,15 +30,10 @@ Statement *parseStatement(string command, Env env);
  * @brief Parse a partial rule into a tree.
  * 
  * @param command The command to parse. Use () for grouping and spaces for spacing.
- * @param variables Set of valid variable names.
- * @param type_vars Set of valid type_var names.
- * @param op_names Set of valid operation names.
- * @param type_names Set of valid type names.
+ * @param env The environment to parse in.
  * @return RuleTree* The tree corresponding to that rule.
  */
-RuleTree *parseRule(string command, 
-    map<string, string> variables, set<string> type_vars, 
-    map<string, vector<string>> op_names, set<string> type_names);
+RuleTree *parseRule(string command, Env *env);
 
 /**
  * @brief Parse a variable declaration.
@@ -71,7 +44,6 @@ RuleTree *parseRule(string command,
  */
 pair<string, string> parseVarDeclare(string command, Env *env);
 
-// TODO
 /**
  * @brief Parse a TypeVar declaration.
  * 
@@ -81,7 +53,6 @@ pair<string, string> parseVarDeclare(string command, Env *env);
  */
 string parseTypeVarDeclare(string command, Env *env);
 
-// TODO
 /**
  * @brief Parse an Op declaration.
  * 
@@ -90,6 +61,19 @@ string parseTypeVarDeclare(string command, Env *env);
  * @return pair<string, vector<string>> The operation definition.
  */
 pair<string, vector<string>> parseOpDeclare(string command, Env *env);
+
+/**
+ * @brief Type check a rule.
+ * 
+ * @param rule The rule to check.
+ * @param env The env to check with.
+ * @param bound_types A map from f's type vars to their assigned values in the rule.
+ * (This should be set to empty when calling this function externally).
+ * 
+ * @return A map with updated bindings, and modifies the RuleTree to have valid types.
+ * @throws IllegalArgumentException when there is a type mismatch
+ */
+map<string, string> typeCheck(RuleTree *rule, Env *env, map<string, string> bound_types);
 
 /**
  * @brief Split a command into a vector of elements. Does not recurse. 
