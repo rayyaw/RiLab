@@ -12,20 +12,21 @@ using std::set;
 using std::string;
 using std::vector;
 
+// Note: _ is the default TypeVar. It will match against anything.
 namespace rules {
-    set<string> default_operators = {
-        "-->",  // Implication
-        "--<>", // Equivalence
+    map<string, vector<string>> default_operators = {
+        {"-->", {"_", "_"}},  // Implication
+        {"--<>", {"_", "_"}}, // Equivalence
         
-        "!", // NOT
-        "&", // AND
-        "|", // OR
+        {"!", {"_"     }}, // NOT
+        {"&", {"_", "_"}}, // AND
+        {"|", {"_", "_"}}, // OR
 
-        ":",  // such that
-        "|A", // for all
-        "|E", // there exists
+        {":", {"_", "_"}},  // such that
+        {"|A", {"_"    }}, // for all
+        {"|E", {"_"    }}, // there exists
 
-        "in"  // Set/Type Inclusion
+        {"in", {"_", "_"}}  // Set/Type Inclusion
     };
 }
 
@@ -35,7 +36,7 @@ size_t rule_id = 0;
 
 RuleTree *parseRule(string command, 
     map<string, string> variables, set<string> type_vars, 
-    set<string> op_names, set<string> type_names) {
+    map<string, vector<string>> op_names, set<string> type_names) {
 
     vector<string> command_parts = splitCommand(command);
 
@@ -46,14 +47,16 @@ RuleTree *parseRule(string command,
     RuleTree *current = new RuleTree();
     current -> rule_id = rule_id ++;
     current -> rule_value = "";
+    current -> rule_op = "";
 
     // Assume a rule is of the form (op a b ...) like how Haskell functions are applied
 
     // If this is an operator, split and recurse.
     if (default_operators.find(command_parts[0]) != default_operators.end() ||
     op_names.find(command_parts[0]) != op_names.end()) {
-        current -> rule_type = command_parts[0];
+        current -> rule_op = command_parts[0];
 
+        // FIXME - type and arg-count checking
         current -> sub_rules = vector<RuleTree*>();
 
         for (size_t i = 1; i < command_parts.size(); i++) {

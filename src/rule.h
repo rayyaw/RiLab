@@ -13,10 +13,11 @@ using std::ostream;
 using std::vector;
 
 struct RuleTree {
-    string rule_id;
+    size_t rule_id;
 
     string rule_type;
     string rule_value;
+    string rule_op;
 
     vector<RuleTree*> sub_rules;
 
@@ -27,7 +28,7 @@ struct RuleTree {
 struct Env {
     set<string> type_vars;
     set<string> type_names;
-    
+
     // maps from operator name to list of required type names/vars
     map<string, vector<string>> operators; 
 

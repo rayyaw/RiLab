@@ -48,8 +48,6 @@ Statement *parseStatement(string command, Env env);
 
 // Helper Functions and Methods
 
-// FIXME: Add operator type and arg-count-checking
-// FIXME: Allow variables to have a TypeVar type
 /**
  * @brief Parse a partial rule into a tree.
  * 
@@ -62,7 +60,7 @@ Statement *parseStatement(string command, Env env);
  */
 RuleTree *parseRule(string command, 
     map<string, string> variables, set<string> type_vars, 
-    set<string> op_names, set<string> type_names);
+    map<string, vector<string>> op_names, set<string> type_names);
 
 // TODO + check not ANYWHERE in env for these functions (or in reserved words/operators)
 // reserved words = ask, declare, rule, var, typevar, typename

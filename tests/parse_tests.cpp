@@ -1,13 +1,15 @@
 #include "catch.hpp"
 
-#include "../src/parse.h"
 #include "../src/rule.h"
+#include "../src/parse.h"
 
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
+using std::map;
 using std::set;
 using std::string;
 using std::ostringstream;
@@ -114,8 +116,9 @@ TEST_CASE("Empty string", "[parseRule]") {
     string cmd = "";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
@@ -125,8 +128,9 @@ TEST_CASE("Single integer literal", "[parseRule]") {
     string cmd = "12";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -143,8 +147,9 @@ TEST_CASE("Single boolean literal", "[parseRule]") {
     string cmd = "false";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -161,8 +166,9 @@ TEST_CASE("Single Var literal", "[parseRule]") {
     string cmd = "IntVar";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -179,8 +185,9 @@ TEST_CASE("Single TypeVar literal", "[parseRule]") {
     string cmd = "TypeVarName";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -197,8 +204,9 @@ TEST_CASE("Single TypeName literal", "[parseRule]") {
     string cmd = "Real";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -216,7 +224,7 @@ TEST_CASE("Multiple literals (invalid)", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
     set<string> type_names = {"natural", "Real"};
 
     REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
@@ -228,7 +236,7 @@ TEST_CASE("Single invalid value", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
     set<string> type_names = {"natural", "Real"};
 
     REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
@@ -240,7 +248,7 @@ TEST_CASE("Two Int literals", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -258,7 +266,7 @@ TEST_CASE("TypeVar and Float literal", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -276,7 +284,7 @@ TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"}; 
-    set<string> op_names = {"+", "-", "E"};
+    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -288,3 +296,5 @@ TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
     REQUIRE(tree_val == "(+ (& (Int 10) (Float 20.0)) (|E (natural IntVar) (TypeName Real)))");
 
 }
+
+// FIXME - test invalid type matches
