@@ -56,8 +56,21 @@ RuleTree *parseRule(string command,
     op_names.find(command_parts[0]) != op_names.end()) {
         current -> rule_op = command_parts[0];
 
-        // FIXME - type and arg-count checking
         current -> sub_rules = vector<RuleTree*>();
+
+        vector<string> op_params;
+        if (default_operators.find(command_parts[0]) != default_operators.end()) {
+            op_params = default_operators[command_parts[0]];
+        } else {
+            op_params = op_names[command_parts[0]];
+        } 
+
+        // Check that the function argument count is correct
+        if (op_params.size() != command_parts.size() - 1) {
+            throw "ParseException: Invalid number of arguments passed to function";
+        }
+
+        // FIXME - type checking
 
         for (size_t i = 1; i < command_parts.size(); i++) {
             string next_command = command_parts[i];

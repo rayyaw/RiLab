@@ -280,9 +280,9 @@ TEST_CASE("TypeVar and Float literal", "[parseRule]") {
 }
 
 TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
-    string cmd = "+ (& 10 20.0) (|E IntVar Real)";
+    string cmd = "+ (& 10 20.0) (|E OtherVar)";
 
-    map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
+    map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "TypeVarName"}};
     set<string> type_vars = {"TypeVarName"}; 
     map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
     set<string> type_names = {"natural", "Real"};
@@ -293,7 +293,7 @@ TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
     oss << *tree;
 
     string tree_val = oss.str();
-    REQUIRE(tree_val == "(+ (& (Int 10) (Float 20.0)) (|E (natural IntVar) (TypeName Real)))");
+    REQUIRE(tree_val == "(+ (& (Int 10) (Float 20.0)) (|E (TypeVarName OtherVar)))");
 
 }
 
