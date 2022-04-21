@@ -3,19 +3,111 @@
 #include "rule.h"
 #include "utils.h"
 
+#include <iostream>
+#include <sstream>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+using std::endl;
 using std::map;
+using std::ostringstream;
 using std::set;
 using std::string;
 using std::vector;
 
 using namespace rules;
 
-size_t rule_id = 0;
+string parseStatement(string command, Env *env) {
+    // Find the first keyword.
+    int first_space = charPos(command, ' ', 1);
+    env -> ask_rule = nullptr;
+
+    ostringstream out = ostringstream();
+
+    string first_word = command.substr(0, first_space);
+
+    // Show the current environment.
+    if (command == "show") {
+        out << *env;
+        return out.str();
+    }
+
+    if (first_space == -1) {
+        return "\n";
+    }
+
+    // If we have an ask, check for validity then return it
+    if (first_word == "ask") {
+        string remainder = command.substr(first_space + 1);
+        RuleTree *ask_rule = parseRule(remainder, env);
+
+        typeCheck(ask_rule, env, map<string, string>());
+        env -> ask_rule = ask_rule;
+
+        out << "Asking " << ask_rule << endl;
+        return out.str();
+    }
+
+    if (first_word == "declare") {
+        int second_space = charPos(command, ' ', 2);
+
+        if (second_space == -1) {
+            throw "ParseException: Invalid use of 'declare' keyword. See the README for more details.";
+        }
+
+        string second_word = command.substr(first_space + 1, second_space - first_space - 1);
+        string remainder = command.substr(second_space + 1);
+
+        // VarDeclare
+        if (second_word == "var") {
+            pair<string, string> var = parseVarDeclare(remainder, env);
+            env -> variables[var.first] = var.second;
+
+            out << "Added variable " << var.first << " of type " << var.second << "." << endl;
+            return out.str();
+        }
+
+        // TypeVarDeclare
+        if (second_word == "typevar") {
+            string type_var = parseTypeVarDeclare(remainder, env);
+            env -> type_vars.insert(type_var);
+
+            out << "Added TypeVar " << type_var << "." << endl;
+            return out.str();
+        }
+
+        // OpDeclare
+        if (second_word == "operator") {
+            pair<string, vector<string>> op_specs = parseOpDeclare(remainder, env);
+            env -> operators[op_specs.first] = op_specs.second;
+
+            out << "Added Operator " << op_specs.first << " with types out=" << 
+            op_specs.second[0] << ", in=";
+
+            for (size_t i = 1; i < op_specs.second.size(); i++) {
+                out << op_specs.second[i] << ", ";
+            }
+
+            out << endl;
+            return out.str();
+        }
+
+        // RuleDeclare
+        if (second_word == "rule") {
+            RuleTree *rule = parseRule(remainder, env);
+            typeCheck(rule, env, map<string, string>());
+            env -> rules.insert(rule);
+
+            out << "Added Rule " << *rule << endl;
+            return out.str();
+        }
+    }
+
+    throw "ParseException: Unrecognized Command Name. See the README for more details.";
+
+}
 
 RuleTree *parseRule(string command, Env *env) {
     map<string, string> variables = env -> variables;
@@ -31,7 +123,6 @@ RuleTree *parseRule(string command, Env *env) {
     }
 
     RuleTree *current = new RuleTree();
-    current -> rule_id = rule_id ++;
     current -> rule_value = "";
     current -> rule_op = "";
 
@@ -193,6 +284,7 @@ map<string, string> typeCheck(RuleTree *rule, Env *env, map<string, string> boun
     }
 
     vector<string> cur_types = env -> operators[rule -> rule_op];
+    if (cur_types.size() == 0) cur_types = default_operators[rule -> rule_op];
 
     // Recursive Case: Type Check subrules
     for (size_t i = 0; i < rule -> sub_rules.size(); i++) {
@@ -298,4 +390,17 @@ vector<string> splitCommand(string command) {
     }
 
     return command_parts;
+}
+
+int charPos(string to_test, char to_find, size_t num_occurrences) {
+    size_t char_ct = 0;
+
+    for (size_t i = 0; i < to_test.length(); i++) {
+        if (to_test[i] == to_find) {
+            char_ct ++;
+            if (char_ct == num_occurrences) return i;
+        }
+    }
+
+    return -1;
 }

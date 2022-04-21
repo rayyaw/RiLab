@@ -288,6 +288,19 @@ TEST_CASE("Invalid number of operator arguments - default operator", "[parseRule
     REQUIRE_THROWS(parseRule(cmd, env));
 }
 
+TEST_CASE("Recursive Rule Parse", "[parseRule]") {
+    string command = "--<> (+ 1 2) (+ 2 1)";
+    Env *env = setup_env();
+
+    RuleTree *tree = parseRule(command, env);
+
+    ostringstream oss = ostringstream();
+    oss << *tree;
+
+    string tree_val = oss.str();
+    REQUIRE(tree_val == "(--<> (+ (Int 1) (Int 2)) (+ (Int 2) (Int 1)))");
+}
+
 // VarDeclare tests
 TEST_CASE("Simple VarDeclare case (global variable name)", "[parseVarDeclare]") {
     string command = "Riley Int";
@@ -436,6 +449,7 @@ Env *setup_type_env() {
     env -> type_names = type_names;
     env -> operators = op_names;
     env -> type_vars = type_vars;
+    env -> rules = set<RuleTree*>();
 
     return env;
 }
@@ -550,4 +564,83 @@ TEST_CASE("Type checking - Recursive (Valid)", "[typeCheck]") {
     REQUIRE(to_check -> sub_rules[0] -> rule_type == "Int");
     REQUIRE(to_check -> sub_rules[1] -> rule_type == "Int");
 
+}
+
+// parseStatement tests
+TEST_CASE("Invalid statement", "[parseStatement]") {
+    string command = "";
+    Env *env = setup_type_env();
+
+    string output = parseStatement(command, env);
+    REQUIRE(output == "\n");
+}
+
+TEST_CASE("Invalid statement with Throw", "[parseStatement]") {
+    string command = "E A";
+    Env *env = setup_type_env();
+
+    REQUIRE_THROWS(parseStatement(command, env));
+}
+
+TEST_CASE("Invalid Declare statement", "[parseStatement]") {
+    string command = "Declare A";
+    Env *env = setup_type_env();
+
+    REQUIRE_THROWS(parseStatement(command, env));
+}
+
+TEST_CASE("Show statement", "[parseStatement]") {
+    string command = "show";
+    Env *env = setup_type_env();
+
+    string output = parseStatement(command, env);
+
+    REQUIRE(output == "Current env\n-------\n\nType Names (Local)\n-----\nReal\nnatural\n\nType Names (Global)\n-----\nBool\nFloat\nInt\n_\n\nTypeVars\n-----\nInputNumType\nNumType\n\nVariables\n-----\nIntVar1 (of type Int)\nIntVar2 (of type Int)\nNatVar (of type natural)\nOtherVar1 (of type InputNumType)\nOtherVar2 (of type InputNumType)\nRealVar (of type Real)\n\nOperators (Local)\n-----\n+ : NumType <- {NumType, NumType, }\n/ : Real <- {NumType, NumType, }\nE : Int <- {Float, natural, }\n] : Int <- {Int, Int, }\n\nOperators (Global)\n-----\n! : _ <- {_, }\n& : _ <- {_, _, }\n--<> : _ <- {_, _, }\n--> : _ <- {_, _, }\n: : _ <- {_, _, }\nin : _ <- {_, _, }\n| : _ <- {_, _, }\n|A : _ <- {_, }\n|E : _ <- {_, }\n\nRules\n-----\n");
+}
+
+TEST_CASE("Declare TypeVar statement", "[parseStatement]") {
+    string command = "declare typevar Truthy";
+    Env *env = setup_type_env();
+
+    string output = parseStatement(command, env);
+
+    REQUIRE(output == "Added TypeVar Truthy.\n");
+    REQUIRE(env -> type_vars.find("Truthy") != env -> type_vars.end());
+}
+
+TEST_CASE("Declare Variable statement", "[parseStatement]") {
+    string command = "declare var Riley NumType";
+    Env *env = setup_type_env();
+
+    string output = parseStatement(command, env);
+
+    REQUIRE(output == "Added variable Riley of type NumType.\n");
+    REQUIRE(env -> variables["Riley"] == "NumType");
+}
+
+TEST_CASE("Declare Operator statement", "[parseStatement]") {
+    string command = "declare operator T Float Int Int Int";
+    Env *env = setup_type_env();
+
+    string output = parseStatement(command, env);
+
+    REQUIRE(output == "Added Operator T with types out=Float, in=Int, Int, Int, \n");
+
+    vector<string> params = env -> operators["T"];
+
+    REQUIRE(params.size() == 4);
+    REQUIRE(params[0] == "Float");
+    REQUIRE(params[1] == "Int");
+    REQUIRE(params[2] == "Int");
+    REQUIRE(params[3] == "Int");
+}
+
+TEST_CASE("Declare Rule statement", "[parseStatement]") {
+    string command = "declare rule --<> (+ 1 2) (+ 2 1)";
+    Env *env = setup_type_env();
+
+    string output = parseStatement(command, env);
+
+    REQUIRE(output == "Added Rule (--<> (+ (Int 1) (Int 2)) (+ (Int 2) (Int 1)))\n");
+    REQUIRE(env -> rules.size() == 1);
 }

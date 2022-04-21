@@ -13,8 +13,6 @@ using std::ostream;
 using std::vector;
 
 struct RuleTree {
-    size_t rule_id;
-
     string rule_type;
     string rule_value;
     string rule_op;
@@ -41,6 +39,8 @@ struct Env {
 
     set<RuleTree*> rules;
 
+    RuleTree *ask_rule;
+
     /**
      * @brief Check if the given name is reserved or free in the environment.
      * 
@@ -56,4 +56,9 @@ struct Env {
 
     // Check if the name is an operator name.
     bool isOpName(string name);
+
+    /**
+     * @brief Print out an env, including all rules, vars, etc.
+     */
+    friend ostream &operator<<(ostream &os, Env env);
 };

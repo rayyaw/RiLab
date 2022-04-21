@@ -22,7 +22,7 @@ using std::vector;
  * @param env The environment to modify, including all variable types, rules, etc.
  * @return string - The string to output to the console.
  */
-string *parseStatement(string command, Env *env);
+string parseStatement(string command, Env *env);
 
 // Helper Functions and Methods
 
@@ -84,5 +84,15 @@ map<string, string> typeCheck(RuleTree *rule, Env *env, map<string, string> boun
  */
 vector<string> splitCommand(string command);
 
-
+/**
+ * @brief Returns the position of the nth to_find character in the string.
+ * (The function is 1-indexed.)
+ * 
+ * @param to_test The string to search.
+ * @param to_find The character to find.
+ * @param num_occurrences Find the nth occurrence of the character.
+ * @return size_t The position of that character in the string, 
+ * or -1 if the character wasn't found.
+ */
+int charPos(string to_test, char to_find, size_t num_occurrences);
 
