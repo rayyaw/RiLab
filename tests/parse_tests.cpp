@@ -117,7 +117,7 @@ TEST_CASE("Empty string", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"};
-    vector<string> op_values = {"_", "_"}; 
+    vector<string> op_values = {"_", "_", "_"}; 
     map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
@@ -129,7 +129,7 @@ TEST_CASE("Single integer literal", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"};
-    vector<string> op_values = {"_", "_"}; 
+    vector<string> op_values = {"_", "_", "_"}; 
     map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
@@ -148,7 +148,7 @@ TEST_CASE("Single boolean literal", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"};
-    vector<string> op_values = {"_", "_"}; 
+    vector<string> op_values = {"_", "_", "_"}; 
     map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
@@ -167,7 +167,7 @@ TEST_CASE("Single Var literal", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"};
-    vector<string> op_values = {"_", "_"}; 
+    vector<string> op_values = {"_", "_", "_"}; 
     map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
@@ -186,7 +186,7 @@ TEST_CASE("Single TypeVar literal", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"};
-    vector<string> op_values = {"_", "_"}; 
+    vector<string> op_values = {"_", "_", "_"}; 
     map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
@@ -205,7 +205,7 @@ TEST_CASE("Single TypeName literal", "[parseRule]") {
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
     set<string> type_vars = {"TypeVarName"};
-    vector<string> op_values = {"_", "_"}; 
+    vector<string> op_values = {"_", "_", "_"}; 
     map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
@@ -223,8 +223,9 @@ TEST_CASE("Multiple literals (invalid)", "[parseRule]") {
     string cmd = "10 11 12";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
@@ -235,8 +236,9 @@ TEST_CASE("Single invalid value", "[parseRule]") {
     string cmd = "Riley";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
@@ -247,8 +249,9 @@ TEST_CASE("Two Int literals", "[parseRule]") {
     string cmd = "--> 10 12";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -265,8 +268,9 @@ TEST_CASE("TypeVar and Float literal", "[parseRule]") {
     string cmd = "E TypeVarName 10.0";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -283,8 +287,9 @@ TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
     string cmd = "+ (& 10 20.0) (|E OtherVar)";
 
     map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "TypeVarName"}};
-    set<string> type_vars = {"TypeVarName"}; 
-    map<string, vector<string>> op_names = {{"+",{"_", "_"}}, {"-", {"_", "_"}}, {"E", {"_", "_"}}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
     set<string> type_names = {"natural", "Real"};
 
     RuleTree *tree = parseRule(cmd, variables, type_vars, op_names, type_names);
@@ -297,4 +302,54 @@ TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
 
 }
 
-// FIXME - test invalid type matches
+// Test incorrect number of operator arguments
+TEST_CASE("Invalid number of operator arguments - user operator", "[parseRule]") {
+    string cmd = "+ (& 10 20.0) (|E OtherVar) 10";
+
+    map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
+    set<string> type_names = {"natural", "Real"};
+
+    REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
+}
+
+TEST_CASE("Invalid number of operator arguments - default operator", "[parseRule]") {
+    string cmd = "|A (& 10 20.0) (|E OtherVar)";
+
+    map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "TypeVarName"}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"_", "_", "_"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
+    set<string> type_names = {"natural", "Real"};
+
+    REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
+}
+
+// Invalid type match tests
+TEST_CASE("Invalid operands to user function (simple)", "[parseRule]") {
+    string cmd = "+ 10.0 12";
+
+    map<string, string> variables = {{"IntVar", "natural"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"Int", "Int", "Int"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
+    set<string> type_names = {"natural", "Real"};
+
+    REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
+
+}
+
+TEST_CASE("Invalid operands to user function (recursive)", "[parseRule]") {
+    string cmd = "+ (--> 10 IntVar) 12";
+
+    map<string, string> variables = {{"IntVar", "Int"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
+    set<string> type_vars = {"TypeVarName"};
+    vector<string> op_values = {"Int", "Int", "Int"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
+    set<string> type_names = {"natural", "Real"};
+
+    REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
+
+}

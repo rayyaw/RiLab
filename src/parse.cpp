@@ -15,18 +15,18 @@ using std::vector;
 // Note: _ is the default TypeVar. It will match against anything.
 namespace rules {
     map<string, vector<string>> default_operators = {
-        {"-->", {"_", "_"}},  // Implication
-        {"--<>", {"_", "_"}}, // Equivalence
+        {"-->", {"_", "_", "_"}},  // Implication
+        {"--<>", {"_", "_", "_"}}, // Equivalence
         
-        {"!", {"_"     }}, // NOT
-        {"&", {"_", "_"}}, // AND
-        {"|", {"_", "_"}}, // OR
+        {"!", {"_", "_"     }}, // NOT
+        {"&", {"_", "_", "_"}}, // AND
+        {"|", {"_", "_", "_"}}, // OR
 
-        {":", {"_", "_"}},  // such that
-        {"|A", {"_"    }}, // for all
-        {"|E", {"_"    }}, // there exists
+        {":", {"_", "_", "_"}},  // such that
+        {"|A", {"_", "_"    }}, // for all
+        {"|E", {"_", "_"    }}, // there exists
 
-        {"in", {"_", "_"}}  // Set/Type Inclusion
+        {"in", {"_", "_", "_"}}  // Set/Type Inclusion
     };
 }
 
@@ -66,11 +66,11 @@ RuleTree *parseRule(string command,
         } 
 
         // Check that the function argument count is correct
-        if (op_params.size() != command_parts.size() - 1) {
-            throw "ParseException: Invalid number of arguments passed to function";
+        if (op_params.size() != command_parts.size()) {
+            throw "ParseException: Invalid number of arguments passed to function " + command_parts[0];
         }
 
-        // FIXME - type checking
+        current -> rule_type = op_params[0];
 
         for (size_t i = 1; i < command_parts.size(); i++) {
             string next_command = command_parts[i];
@@ -83,6 +83,13 @@ RuleTree *parseRule(string command,
             current -> sub_rules.push_back(
                 parseRule(next_command, variables, type_vars, op_names, type_names)
             );
+
+            string cur_type = current -> sub_rules[i - 1] -> rule_type;
+
+            // Type check the parameters. _ is a wildcard that matches anything.
+            if (cur_type != op_params[i] && op_params[i] != "_") {
+                throw "ParseException: Type mismatch in operation at " + cur_type;
+            }
         }
     }
 
@@ -90,9 +97,9 @@ RuleTree *parseRule(string command,
     else {
         // Check that there's only a single extra command_part, with no grouping.
         if (command_parts.size() != 1) {
-            throw "ParseException: Single values must be a single value";
+            throw "ParseException: Single values must be a single value at " + command;
         } else if (command_parts[0][0] == '(') {
-            throw "ParseException: Single values may not contain grouping";
+            throw "ParseException: Single values may not contain grouping at " + command_parts[0];
         }
 
         // Check whether this is a boolean.
@@ -131,7 +138,7 @@ RuleTree *parseRule(string command,
             return current;
         }
 
-        throw "ParseException: Undefined non-literal input";
+        throw "ParseException: Undefined non-literal input " + command_parts[0];
 
     }
 
@@ -167,7 +174,7 @@ vector<string> splitCommand(string command) {
             case '(':
                 // If parentheses found, check for validity (open parentheses)
                 if (!parenthesis_level && block_start != i) {
-                    throw "ParseException: Parentheses must be separated by whitespace";
+                    throw "ParseException: Parentheses must be separated by whitespace in " + command;
                 }
 
                 parenthesis_level ++;
@@ -175,7 +182,7 @@ vector<string> splitCommand(string command) {
             case ')':
                 // No ( to match )
                 if (!parenthesis_level) {
-                    throw "ParseException: No ( found to match this )";
+                    throw "ParseException: No ( found to match this ) in " + command;
                 }
 
                 parenthesis_level --;
@@ -197,7 +204,7 @@ vector<string> splitCommand(string command) {
         }
          
     } else {
-        throw "ParseException: No ) found to match this (";
+        throw "ParseException: No ) found to match this ( in " + command;
     }
 
     return command_parts;
