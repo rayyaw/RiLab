@@ -21,7 +21,11 @@ struct RuleTree {
 
     vector<RuleTree*> sub_rules;
 
-    // Print out a rule.
+    /**
+     * @brief Print out a rule.
+     * If this is a recursive rule, it'll print (rule_op [print children here])
+     * Otherwise, it'll print (rule_type rule_value)
+     */
     friend ostream &operator<<(ostream &os, RuleTree r);
 };
 
@@ -33,7 +37,17 @@ struct Env {
     map<string, vector<string>> operators; 
 
     // maps from var name to the associated type_name
-    map<string, string> var_types; 
+    map<string, string> variables; 
 
     set<RuleTree*> rules;
+
+    /**
+     * @brief Check if the given name is reserved or free in the environment.
+     * 
+     * @param name The name to check
+     * Matches against operators, local names and the global reserved keywords.
+     * @return true if the name is not in use anywhere
+     * @return false otherwise
+     */
+    bool isReservedName(string name);
 };

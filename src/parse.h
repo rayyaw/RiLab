@@ -62,8 +62,6 @@ RuleTree *parseRule(string command,
     map<string, string> variables, set<string> type_vars, 
     map<string, vector<string>> op_names, set<string> type_names);
 
-// TODO + check not ANYWHERE in env for these functions (or in reserved words/operators)
-// reserved words = ask, declare, rule, var, typevar, typename
 /**
  * @brief Parse a variable declaration.
  * 

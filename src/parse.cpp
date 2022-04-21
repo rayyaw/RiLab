@@ -1,3 +1,4 @@
+#include "globals.h"
 #include "parse.h"
 #include "rule.h"
 #include "utils.h"
@@ -11,24 +12,6 @@ using std::map;
 using std::set;
 using std::string;
 using std::vector;
-
-// Note: _ is the default TypeVar. It will match against anything.
-namespace rules {
-    map<string, vector<string>> default_operators = {
-        {"-->", {"_", "_", "_"}},  // Implication
-        {"--<>", {"_", "_", "_"}}, // Equivalence
-        
-        {"!", {"_", "_"     }}, // NOT
-        {"&", {"_", "_", "_"}}, // AND
-        {"|", {"_", "_", "_"}}, // OR
-
-        {":", {"_", "_", "_"}},  // such that
-        {"|A", {"_", "_"    }}, // for all
-        {"|E", {"_", "_"    }}, // there exists
-
-        {"in", {"_", "_", "_"}}  // Set/Type Inclusion
-    };
-}
 
 using namespace rules;
 
@@ -146,6 +129,30 @@ RuleTree *parseRule(string command,
 
 }
 
+pair<string, string> parseVarDeclare(string command, Env *env) {
+    vector<string> command_parts = splitCommand(command);
+
+    if (command_parts.size() != 2) {
+        throw "ParseException: Invalid number of arguments were passed to 'declare variable' (expected 2)";
+    }
+
+    // Check that the variable name isn't taken
+    if (env -> isReservedName(command_parts[0])) {
+        throw "IllegalArgumentException: This name is already taken at " + command_parts[0];
+    }
+
+    // Check that the variable type is valid
+    if (command_parts[1] == "_" || command_parts[1] == "Int" || 
+        command_parts[1] == "Bool" || command_parts[1] == "Float" ||
+    env -> type_vars.find(command_parts[1]) != env -> type_vars.end() ||
+    env -> type_names.find(command_parts[1]) != env -> type_names.end()) {
+        return {command_parts[0], command_parts[1]};
+    }
+
+    throw "IllegalArgumentException: No TypeName or TypeVar to match type " + command_parts[1]; 
+
+}
+
 vector<string> splitCommand(string command) {
     vector<string> command_parts = vector<string>();
 
@@ -196,7 +203,7 @@ vector<string> splitCommand(string command) {
     if (!parenthesis_level) {
 
         // Check for nonempty substring.
-        if (block_start + 1 < command.length()) {
+        if (block_start < command.length()) {
 
             // i - 1 removes the trailing whitespace
             string curr_block = command.substr(block_start, command.length() - block_start);

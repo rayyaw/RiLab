@@ -7,12 +7,14 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 using std::map;
+using std::ostringstream;
+using std::pair;
 using std::set;
 using std::string;
-using std::ostringstream;
 using std::vector;
 
 // Unit tests for the parser
@@ -109,6 +111,15 @@ TEST_CASE("Parenthesis with no whitespace around it", "[splitCommand]") {
     string cmd = "1 +(2)";
 
     REQUIRE_THROWS(splitCommand(cmd));
+}
+
+TEST_CASE("Single ending character", "[splitCommand]") {
+    string command = "Riley _";
+
+    vector<string> out = splitCommand(command);
+    REQUIRE(out.size() == 2);
+    REQUIRE(out[0] == "Riley");
+    REQUIRE(out[1] == "_");
 }
 
 // parseRule tests
@@ -352,4 +363,78 @@ TEST_CASE("Invalid operands to user function (recursive)", "[parseRule]") {
 
     REQUIRE_THROWS(parseRule(cmd, variables, type_vars, op_names, type_names));
 
+}
+
+// VarDeclare tests
+Env *setup_env() {
+    map<string, string> variables = {{"IntVar", "Int"}, {"BoolVar", "Real"}, {"OtherVar", "Real"}};
+    set<string> type_vars = {"Type"};
+    vector<string> op_values = {"Int", "Int", "Int"}; 
+    map<string, vector<string>> op_names = {{"+", op_values}, {"-", op_values}, {"E", op_values}};
+    set<string> type_names = {"natural", "Real"}; 
+
+    Env *env = new Env();
+    env -> variables = variables;
+    env -> type_names = type_names;
+    env -> operators = op_names;
+    env -> type_vars = type_vars;
+
+    return env;
+}
+
+TEST_CASE("Simple VarDeclare case (global variable name)", "[parseVarDeclare]") {
+    string command = "Riley Int";
+    Env *env = setup_env();
+
+    pair<string, string> out = parseVarDeclare(command, env);
+    REQUIRE(out.first == "Riley");
+    REQUIRE(out.second == "Int");
+}
+
+TEST_CASE("Simple VarDeclare case (wildcard)", "[parseVarDeclare]") {
+    string command = "Riley _";
+    Env *env = setup_env();
+
+    pair<string, string> out = parseVarDeclare(command, env);
+    REQUIRE(out.first == "Riley");
+    REQUIRE(out.second == "_");
+}
+
+TEST_CASE("Simple VarDeclare case (user declared type)", "[parseVarDeclare]") {
+    string command = "VarName Real";
+    Env *env = setup_env();
+
+    pair<string, string> out = parseVarDeclare(command, env);
+    REQUIRE(out.first == "VarName");
+    REQUIRE(out.second == "Real");
+}
+
+TEST_CASE("Simple VarDeclare case (TypeVar type)", "[parseVarDeclare]") {
+    string command = "Riley Type";
+    Env *env = setup_env();
+
+    pair<string, string> out = parseVarDeclare(command, env);
+    REQUIRE(out.first == "Riley");
+    REQUIRE(out.second == "Type");
+}
+
+TEST_CASE("Invalid VarDeclare case (Reserved name)", "[parseVarDeclare]") {
+    string command = "declare Type";
+    Env *env = setup_env();
+
+    REQUIRE_THROWS(parseVarDeclare(command, env));
+}
+
+TEST_CASE("Invalid VarDeclare case (Reserved name local)", "[parseVarDeclare]") {
+    string command = "IntVar Type";
+    Env *env = setup_env();
+
+    REQUIRE_THROWS(parseVarDeclare(command, env));
+}
+
+TEST_CASE("Invalid VarDeclare case (Invalid Type)", "[parseVarDeclare]") {
+    string command = "var NotAType";
+    Env *env = setup_env();
+
+    REQUIRE_THROWS(parseVarDeclare(command, env));
 }
