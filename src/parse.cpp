@@ -49,7 +49,7 @@ string parseStatement(string command, Env *env) {
         typeCheck(ask_rule, env, map<string, string>());
         env -> ask_rule = ask_rule;
 
-        out << "Asking " << ask_rule << endl;
+        out << "Asking " << *ask_rule << endl;
         return out.str();
     }
 

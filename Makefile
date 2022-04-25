@@ -20,21 +20,21 @@ parse_debug: parse catch parse_test rule globals
 	g++ bin/catch.o bin/parse.o bin/parse_test.o bin/rule.o bin/utils.o bin/globals.o -o bin/parse_debug 
 
 production_globals:
-	g++ -O2 -o bin/production_globals.o -c src/globals.cpp
+	g++ -O2 -o bin/production_globals.o -c src/globals.cpp -pthread
 production_rule: production_globals
-	g++ -O2 -o bin/production_rule.o -c src/rule.cpp
+	g++ -O2 -o bin/production_rule.o -c src/rule.cpp -pthread
 production_utils:
-	g++ -O2 -o bin/production_utils.o -c src/utils.cpp
+	g++ -O2 -o bin/production_utils.o -c src/utils.cpp -pthread
 production_parse: production_rule production_utils production_globals
-	g++ -O2 -o bin/production_parse.o -c src/parse.cpp 
+	g++ -O2 -o bin/production_parse.o -c src/parse.cpp -pthread
 main: production_parse production_rule
-	g++ -O2 -o bin/main.o production/main.cpp
-
-# FIXME - main, IO, rule truth determiner (+ tests)
+	g++ -O2 -o bin/main.o -c production/main.cpp -pthread
 
 production: production_rule production_utils production_globals main
-	g++ bin/production_globals.o bin/production_rule.o bin/production_utils.o bin/production_parse.o bin/main.o -o bin/RiLab
+	g++ bin/production_globals.o bin/production_rule.o bin/production_utils.o bin/production_parse.o bin/main.o -o bin/RiLab -pthread
 
 clean:
 	rm bin/*
+
+# FIXME - main, IO, rule truth determiner (+ tests)
 
