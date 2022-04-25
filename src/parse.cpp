@@ -3,6 +3,7 @@
 #include "rule.h"
 #include "utils.h"
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -11,6 +12,8 @@
 #include <vector>
 
 using std::endl;
+using std::getline;
+using std::ifstream;
 using std::map;
 using std::ostringstream;
 using std::set;
@@ -50,6 +53,27 @@ string parseStatement(string command, Env *env) {
         return out.str();
     }
 
+    // Source the code from a file
+    if (first_word == "source") {
+        string remainder = command.substr(first_space + 1);
+
+        ifstream f;
+        f.open(remainder);
+
+        if (!f.is_open()) {
+            throw "FileNotFoundException: Please check the file exists.";
+        }
+
+        string line;
+        ostringstream output;
+        while (!f.eof()) {
+            getline(f, line);
+            output << parseStatement(line, env);
+        }
+
+        return output.str();
+    }
+
     if (first_word == "declare") {
         int second_space = charPos(command, ' ', 2);
 
@@ -66,6 +90,15 @@ string parseStatement(string command, Env *env) {
             env -> variables[var.first] = var.second;
 
             out << "Added variable " << var.first << " of type " << var.second << "." << endl;
+            return out.str();
+        }
+
+        // TypeDeclare
+        if (second_word == "type") {
+            string type = parseTypeVarDeclare(remainder, env);
+            env -> type_names.insert(type);
+
+            out << "Added Type " << type << "." << endl;
             return out.str();
         }
 
@@ -260,7 +293,7 @@ pair<string, vector<string>> parseOpDeclare(string command, Env *env) {
     }
 
     pair<string, vector<string>> out = pair<string,vector<string>>();
-    out.first = command[0];
+    out.first = command_parts[0];
     out.second = vector<string>();
 
     // Check that the variable type is valid
