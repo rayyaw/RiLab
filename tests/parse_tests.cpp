@@ -595,7 +595,7 @@ TEST_CASE("Show statement", "[parseStatement]") {
 
     string output = parseStatement(command, env);
 
-    REQUIRE(output == "Current env\n-------\n\nType Names (Local)\n-----\nReal\nnatural\n\nType Names (Global)\n-----\nBool\nFloat\nInt\n_\n\nTypeVars\n-----\nInputNumType\nNumType\n\nVariables\n-----\nIntVar1 (of type Int)\nIntVar2 (of type Int)\nNatVar (of type natural)\nOtherVar1 (of type InputNumType)\nOtherVar2 (of type InputNumType)\nRealVar (of type Real)\n\nOperators (Local)\n-----\n+ : NumType <- {NumType, NumType, }\n/ : Real <- {NumType, NumType, }\nE : Int <- {Float, natural, }\n] : Int <- {Int, Int, }\n\nOperators (Global)\n-----\n! : _ <- {_, }\n& : _ <- {_, _, }\n--<> : _ <- {_, _, }\n--> : _ <- {_, _, }\n: : _ <- {_, _, }\nin : _ <- {_, _, }\n| : _ <- {_, _, }\n|A : _ <- {_, }\n|E : _ <- {_, }\n\nRules\n-----\n");
+    REQUIRE(output == "Current env\n-------\n\nType Names (Local)\n-----\nReal\nnatural\n\nType Names (Global)\n-----\nBool\nFloat\nInt\n_\n\nTypeVars\n-----\nInputNumType\nNumType\n\nVariables\n-----\nIntVar1 (of type Int)\nIntVar2 (of type Int)\nNatVar (of type natural)\nOtherVar1 (of type InputNumType)\nOtherVar2 (of type InputNumType)\nRealVar (of type Real)\n\nLiterals\n-----\n\nOperators (Local)\n-----\n+ : NumType <- {NumType, NumType, }\n/ : Real <- {NumType, NumType, }\nE : Int <- {Float, natural, }\n] : Int <- {Int, Int, }\n\nOperators (Global)\n-----\n! : _ <- {_, }\n& : _ <- {_, _, }\n--<> : _ <- {_, _, }\n--> : _ <- {_, _, }\n: : _ <- {_, _, }\nin : _ <- {_, _, }\n| : _ <- {_, _, }\n|A : _ <- {_, }\n|E : _ <- {_, }\n\nRules\n-----\n");
 }
 
 TEST_CASE("Declare TypeVar statement", "[parseStatement]") {

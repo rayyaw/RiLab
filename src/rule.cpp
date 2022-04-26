@@ -81,6 +81,15 @@ ostream &operator<<(ostream &os, Env env) {
         os << endl;
     }
 
+    os << endl << "Literals" << endl << "-----" << endl;
+    for (auto i = env.literals.begin(); i != env.literals.end(); ++i) {
+        os << i -> first;
+        os << " (of type ";
+        os << i -> second;
+        os << ")";
+        os << endl;
+    }
+
 
     os << endl << "Operators (Local)" << endl << "-----" << endl;
     for (auto i = env.operators.begin(); i != env.operators.end(); ++i) {
