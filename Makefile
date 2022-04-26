@@ -1,6 +1,6 @@
 globals:
 	g++ -g -o bin/globals.o -c src/globals.cpp
-rule: globals
+rule: globals utils
 	g++ -g -o bin/rule.o -c src/rule.cpp
 utils:
 	g++ -g -o bin/utils.o -c src/utils.cpp
@@ -21,7 +21,7 @@ parse_debug: parse catch parse_test rule globals
 
 production_globals:
 	g++ -O2 -o bin/production_globals.o -c src/globals.cpp -pthread
-production_rule: production_globals
+production_rule: production_globals production_utils
 	g++ -O2 -o bin/production_rule.o -c src/rule.cpp -pthread
 production_utils:
 	g++ -O2 -o bin/production_utils.o -c src/utils.cpp -pthread

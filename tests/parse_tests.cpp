@@ -364,14 +364,14 @@ TEST_CASE("Simple TypeVarDeclare case (wildcard)", "[parseTypeVarDeclare]") {
     string command = "_";
     Env *env = setup_env();
 
-    REQUIRE_THROWS(parseTypeVarDeclare(command, env));
+    REQUIRE_THROWS(parseTypeVarName(command, env));
 }
 
 TEST_CASE("Simple TypeVarDeclare case (valid)", "[parseTypeVarDeclare]") {
     string command = "Riley";
     Env *env = setup_env();
 
-    string out = parseTypeVarDeclare(command, env);
+    string out = parseTypeVarName(command, env);
     REQUIRE(out == "Riley");
 }
 
@@ -379,14 +379,14 @@ TEST_CASE("Invalid TypeVarDeclare case (Reserved name)", "[parseTypeVarDeclare]"
     string command = "declare";
     Env *env = setup_env();
 
-    REQUIRE_THROWS(parseTypeVarDeclare(command, env));
+    REQUIRE_THROWS(parseTypeVarName(command, env));
 }
 
 TEST_CASE("Invalid TypeVarDeclare case (Reserved name local)", "[parseTypeVarDeclare]") {
     string command = "IntVar";
     Env *env = setup_env();
 
-    REQUIRE_THROWS(parseTypeVarDeclare(command, env));
+    REQUIRE_THROWS(parseTypeVarName(command, env));
 }
 
 // parseOpDeclare tests
@@ -643,4 +643,23 @@ TEST_CASE("Declare Rule statement", "[parseStatement]") {
 
     REQUIRE(output == "Added Rule (--<> (+ (Int 1) (Int 2)) (+ (Int 2) (Int 1)))\n");
     REQUIRE(env -> rules.size() == 1);
+}
+
+TEST_CASE("Declare Literal statement", "[parseStatement]") {
+    string command = "declare literal Zero Int";
+    Env *env = setup_type_env();
+
+    string output = parseStatement(command, env);
+
+    REQUIRE(output == "Added literal Zero of type Int.\n");
+}
+
+TEST_CASE("Literal Rule statement", "[parseStatement]") {
+    string command = "declare rule --> Zero NumType";
+    Env *env = setup_type_env();
+
+    parseStatement("declare literal Zero Int", env);
+    string output = parseStatement(command, env);
+
+    REQUIRE(output == "Added Rule (--> (Int Zero) (TypeVar NumType))\n");
 }

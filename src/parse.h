@@ -51,7 +51,7 @@ pair<string, string> parseVarDeclare(string command, Env *env);
  * @param env The environment holding all taken names.
  * @return string The variable name to add.
  */
-string parseTypeVarDeclare(string command, Env *env);
+string parseTypeVarName(string command, Env *env);
 
 /**
  * @brief Parse an Op declaration.

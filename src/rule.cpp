@@ -2,6 +2,7 @@
 
 #include "globals.h"
 #include "rule.h"
+#include "utils.h"
 
 using namespace rules;
 
@@ -32,8 +33,10 @@ bool Env::isReservedName(string name) {
     if (default_operators.find(name)     != default_operators.end()           ) return true;
     if (isTypeName(name))                                                       return true;
     if (operators.find(name)             != operators.end()                   ) return true;
+    if (literals.find(name)              != literals.end()                    ) return true;
     if (variables.find(name)             != variables.end()                   ) return true;
     if (global_reserved_names.find(name) != global_reserved_names.end()       ) return true;
+    if (isFloat(name) || isInt(name))                                           return true;
 
     return false;
 }

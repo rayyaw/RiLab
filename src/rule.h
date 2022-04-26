@@ -36,6 +36,8 @@ struct Env {
 
     // maps from var name to the associated type_name
     map<string, string> variables; 
+    // Literals are like variables except you can't substitute one for another
+    map<string, string> literals;
 
     set<RuleTree*> rules;
 

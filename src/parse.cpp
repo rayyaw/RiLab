@@ -93,9 +93,17 @@ string parseStatement(string command, Env *env) {
             return out.str();
         }
 
+        if (second_word == "literal") {
+            pair<string, string> var = parseVarDeclare(remainder, env);
+            env -> literals[var.first] = var.second;
+
+            out << "Added literal " << var.first << " of type " << var.second << "." << endl;
+            return out.str();
+        }
+
         // TypeDeclare
         if (second_word == "type") {
-            string type = parseTypeVarDeclare(remainder, env);
+            string type = parseTypeVarName(remainder, env);
             env -> type_names.insert(type);
 
             out << "Added Type " << type << "." << endl;
@@ -104,7 +112,7 @@ string parseStatement(string command, Env *env) {
 
         // TypeVarDeclare
         if (second_word == "typevar") {
-            string type_var = parseTypeVarDeclare(remainder, env);
+            string type_var = parseTypeVarName(remainder, env);
             env -> type_vars.insert(type_var);
 
             out << "Added TypeVar " << type_var << "." << endl;
@@ -150,6 +158,7 @@ RuleTree *parseRule(string command, Env *env) {
     set<string> type_names = env -> type_names;
 
     vector<string> command_parts = splitCommand(command);
+    map<string, string> literals = env -> literals;
 
     if (command_parts.empty()) {
         throw "ParseException: Empty input is invalid";
@@ -239,6 +248,10 @@ RuleTree *parseRule(string command, Env *env) {
             current -> rule_type = "TypeName";
             current -> rule_value = command_parts[0];
             return current;
+        } else if (literals.find(command_parts[0]) != literals.end()) {
+            current -> rule_type = literals[command_parts[0]];
+            current -> rule_value = command_parts[0];
+            return current;
         }
 
         throw "ParseException: Undefined non-literal input " + command_parts[0];
@@ -270,7 +283,7 @@ pair<string, string> parseVarDeclare(string command, Env *env) {
 
 }
 
-string parseTypeVarDeclare(string command, Env *env) {
+string parseTypeVarName(string command, Env *env) {
 
     // Check that the variable name isn't taken
     if (env -> isReservedName(command)) {
@@ -344,7 +357,7 @@ map<string, string> typeCheck(RuleTree *rule, Env *env, map<string, string> boun
                 is_valid = true;
             }
         }
-
+        
         if (!is_valid) {
             throw "IllegalArgumentException: Type matching failed.";
         }
