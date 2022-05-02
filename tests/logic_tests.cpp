@@ -86,7 +86,7 @@ TEST_CASE("Substitutions work correctly (including recursive cases)", "[substitu
 TEST_CASE("Failed generalization: Incompatible Operators", "[generalize]") {
     Env *env = setupEnv();
     RuleTree *specific = parseRule("--> false true", env);
-    RuleTree *general = parseRule("& true true", env);
+    RuleTree *general = parseRule("--<> true true", env);
 
     REQUIRE_THROWS(generalize(env, general, specific, map<string, RuleTree*>()));
 
@@ -341,8 +341,8 @@ TEST_CASE("Incorrect direction of -->", "[generalize]") {
 
 TEST_CASE("Invalid operator, can't apply", "[generalize]") {
     Env *env = setupEnv();
-    RuleTree *victim = parseRule("IsInt (+ c 1)", env);
-    RuleTree *apply = parseRule("& (IsInt a) (IsInt (+ a 1))", env);
+    RuleTree *victim = parseRule("--<> (+ c 1) (+ b 2)", env);
+    RuleTree *apply = parseRule("--> (+ a 1) (+ b 2)", env);
 
     REQUIRE_THROWS(applyRule(env, apply, victim, false));
 
@@ -360,7 +360,7 @@ TEST_CASE("Rule application: Integer Inclusion", "[generalize]") {
 
     ostringstream out;
     out << *applied;
-    REQUIRE(out.str() == "(IsInt (Int c)");
+    REQUIRE(out.str() == "(IsInt (Int c))");
 
     delete env;
     delete victim;
