@@ -189,9 +189,9 @@ map<string, RuleTree*> generalize(Env *env, RuleTree *general, RuleTree *specifi
         throw "GeneralizeError: Could not match the operators.";
     }
 
-    string rule_type;
+    string rule_type = general -> rule_type;
 
-    // Check for wild card (_) substitutions, which are free
+    // Check for wild card (_) substitutions, which only require binding variables
     if (general -> rule_type == "_") {
         rule_type = specific -> rule_type;
     }

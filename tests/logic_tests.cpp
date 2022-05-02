@@ -24,7 +24,7 @@ using std::vector;
 
 Env *setupEnv() {
     map<string, string> variables = {{"a", "Int"}, {"b", "Int"}, {"c", "Int"}, 
-                                    {"E", "Int"}, {"o", "Int"}, {"d", "Type"}};
+                                    {"E", "Int"}, {"o", "Int"}, {"d", "Type"}, {"f", "_"}};
     set<string> type_vars = {"Type"};
     vector<string> op_values = {"Int", "Int", "Int"}; 
     map<string, vector<string>> op_names = {{"+", op_values}};
@@ -145,4 +145,131 @@ TEST_CASE("Failed generalization: Can't generalize already assigned types", "[ge
     delete general;
 } 
 
-// Successful generalization tests
+// Successful generalization tests (lit, var, typevar, _ -> lit, var, typevar, _)
+TEST_CASE("Successful generalization: Literal generalizes to itself", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ Zero One", env);
+    RuleTree *general = parseRule("+ Zero One", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.empty());
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Successful generalization: Literal generalizes to Var / TypeVar", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ Zero One", env);
+    RuleTree *general = parseRule("+ a d", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["a"] -> rule_value == "Zero");
+    REQUIRE(subs["d"] -> rule_value == "One");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Successful generalization: Literal generalizes to _", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ Zero One", env);
+    RuleTree *general = parseRule("+ a f", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["a"] -> rule_value == "Zero");
+    REQUIRE(subs["f"] -> rule_value == "One");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Successful generalization: Var generalizes to Var", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a b", env);
+    RuleTree *general = parseRule("+ a c", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["a"] -> rule_value == "a");
+    REQUIRE(subs["c"] -> rule_value == "b");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Successful generalization: Var generalizes to TypeVar", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a b", env);
+    RuleTree *general = parseRule("+ a d", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["a"] -> rule_value == "a");
+    REQUIRE(subs["d"] -> rule_value == "b");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Successful generalization: Var generalizes to _", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a b", env);
+    RuleTree *general = parseRule("+ a f", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["a"] -> rule_value == "a");
+    REQUIRE(subs["f"] -> rule_value == "b");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Successful generalization: TypeVar generalizes to TypeVar", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a d", env);
+    RuleTree *general = parseRule("+ a d", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["a"] -> rule_value == "a");
+    REQUIRE(subs["d"] -> rule_value == "d");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Successful generalization: TypeVar generalizes to _", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a d", env);
+    RuleTree *general = parseRule("+ a f", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["a"] -> rule_value == "a");
+    REQUIRE(subs["f"] -> rule_value == "d");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+// Generalizations from a variable to a full expression (including fails)
