@@ -189,71 +189,65 @@ map<string, RuleTree*> generalize(Env *env, RuleTree *general, RuleTree *specifi
         throw "GeneralizeError: Could not match the operators.";
     }
 
-    RuleTree *type_fixed = new RuleTree(*general);
+    string rule_type;
 
     // Check for wild card (_) substitutions, which are free
     if (general -> rule_type == "_") {
-        type_fixed -> rule_type = general -> rule_type;
+        rule_type = specific -> rule_type;
     }
 
     // Check if the TypeVar needs to be substituted (general)
-    else if (env -> type_var_subs.find(general -> rule_op) != env -> type_var_subs.end()) {
-        type_fixed -> rule_type = env -> type_var_subs[general -> rule_op];
+    else if (env -> type_var_subs.find(general -> rule_type) != env -> type_var_subs.end()) {
+        rule_type = env -> type_var_subs[general -> rule_type];
     }
 
     // Check for general being a TypeVar (no substitution so far)
     else if (env -> type_vars.find(general -> rule_type) != env -> type_vars.end()) {
-        type_fixed -> rule_type = specific -> rule_type;
-        env -> type_var_subs[type_fixed -> rule_type] = specific -> rule_type;
+        rule_type = specific -> rule_type;
+        env -> type_var_subs[general -> rule_type] = specific -> rule_type;
     }
 
     map<string, RuleTree*> new_subs = substitutions;
 
+    // Check for type equality (up to generalizations)
+    if (rule_type != specific -> rule_type) {
+        throw "GeneralizeError: Could not match rule output types.";
+    }
+
     // Base Case
-    if (type_fixed -> rule_value != "") {
+    if (general -> rule_value != "") {
         // Checking for literal in type_fixed (requires EXACT value)
-        if (env -> literals.find(type_fixed -> rule_value) != env -> literals.end()) {
-            if (type_fixed -> rule_value == specific -> rule_value) {
-                delete type_fixed;
+        if (env -> literals.find(general -> rule_value) != env -> literals.end()) {
+            if (general -> rule_value == specific -> rule_value) {
                 return new_subs;
             } else {
-                delete type_fixed;
                 throw "GeneralizeError: Two literals are not equal";
             }
         }
 
         // Checking for variable in type_fixed (requires a substitution)
         // Substitution already made -> check validity
-        else if (new_subs.find(type_fixed -> rule_value) != new_subs.end()) {
-            if (new_subs[type_fixed -> rule_value] == specific) {
-                delete type_fixed;
+        else if (new_subs.find(general -> rule_value) != new_subs.end()) {
+            if (new_subs[general -> rule_value] == specific) {
                 return new_subs;
             } else {
-                delete type_fixed;
                 throw "GeneralizeError: Two variables are incompatible";                
             }            
         } else { // No substitution present -> add one
-            new_subs[type_fixed -> rule_value] = specific;
-            delete type_fixed;
+            new_subs[general -> rule_value] = specific;
             return new_subs;
         }
 
     }
 
     // Bind children and recurse
-    if (type_fixed -> rule_type == specific -> rule_type) {
-        // Since the rules are already type checked,
-        // they're guaranteed to have the same length
-        for (size_t i = 0; i < general -> sub_rules.size(); i++) {
-            new_subs = generalize(env, type_fixed -> sub_rules[i], specific -> sub_rules[i], new_subs);
-        }
-
-        delete type_fixed;
-        return new_subs;
-        
+    
+    // Since the rules are already type checked,
+    // they're guaranteed to have the same length
+    for (size_t i = 0; i < general -> sub_rules.size(); i++) {
+        new_subs = generalize(env, general -> sub_rules[i], specific -> sub_rules[i], new_subs);
     }
 
-    delete type_fixed;
-    throw "GeneralizeError: Could not match rule output types.";
+    return new_subs;
 
 }

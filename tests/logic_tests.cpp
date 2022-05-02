@@ -82,3 +82,67 @@ TEST_CASE("Substitutions work correctly (including recursive cases)", "[substitu
     delete subs_rule;
 
 }
+
+TEST_CASE("Failed generalization: Incompatible Operators", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("--> false true", env);
+    RuleTree *general = parseRule("& true true", env);
+
+    REQUIRE_THROWS(generalize(env, general, specific, map<string, RuleTree*>()));
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Failed generalization: Can't generalize from Var to Literal", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a b", env);
+    RuleTree *general = parseRule("+ Zero b", env);
+
+    REQUIRE_THROWS(generalize(env, general, specific, map<string, RuleTree*>()));
+
+    delete env;
+    delete specific;
+    delete general;
+} 
+
+TEST_CASE("Failed generalization: Can't generalize from TypeName to TypeVar (simple)", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("d", env);
+    RuleTree *general = parseRule("b", env);
+
+    REQUIRE_THROWS(generalize(env, general, specific, map<string, RuleTree*>()));
+
+    delete env;
+    delete specific;
+    delete general;
+}
+
+TEST_CASE("Failed generalization: Can't generalize from TypeName to TypeVar", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a d", env);
+    RuleTree *general = parseRule("+ a b", env);
+
+    REQUIRE_THROWS(generalize(env, general, specific, map<string, RuleTree*>()));
+
+    delete env;
+    delete specific;
+    delete general;
+}
+
+TEST_CASE("Failed generalization: Can't generalize already assigned types", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a b", env);
+    RuleTree *general = parseRule("+ a d", env);
+    RuleTree *sub_type = parseRule("a", env);
+
+    REQUIRE_THROWS(generalize(env, general, specific, {{"d", sub_type}}));
+
+    delete env;
+    delete sub_type;
+    delete specific;
+    delete general;
+} 
+
+// Successful generalization tests
