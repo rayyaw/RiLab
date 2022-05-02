@@ -185,9 +185,6 @@ RuleTree *substitute(Env *env, RuleTree *original, map<string, RuleTree*> substi
 
 map<string, RuleTree*> generalize(Env *env, RuleTree *general, RuleTree *specific, 
     map<string, RuleTree*> substitutions) {
-    if (general -> rule_op != specific -> rule_op) {
-        throw "GeneralizeError: Could not match the operators.";
-    }
 
     string rule_type = general -> rule_type;
 
@@ -240,7 +237,10 @@ map<string, RuleTree*> generalize(Env *env, RuleTree *general, RuleTree *specifi
 
     }
 
-    // Bind children and recurse
+    // Bind children and recurse. If recursive case, operators must match.
+    if (general -> rule_op != specific -> rule_op) {
+        throw "GeneralizeError: Could not match the operators.";
+    }
     
     // Since the rules are already type checked,
     // they're guaranteed to have the same length

@@ -273,3 +273,21 @@ TEST_CASE("Successful generalization: TypeVar generalizes to _", "[generalize]")
 } 
 
 // Generalizations from a variable to a full expression (including fails)
+TEST_CASE("Successful generalization: Nested case", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *specific = parseRule("+ a (+ b Zero)", env);
+    RuleTree *general = parseRule("+ a c", env);
+
+    map<string, RuleTree*> subs = generalize(env, general, specific, map<string, RuleTree*>());
+
+    REQUIRE(subs.size() == 2);
+    REQUIRE(subs["c"] -> rule_op == "+");
+    REQUIRE(subs["c"] -> sub_rules.size() == 2);
+    REQUIRE(subs["c"] -> sub_rules[0] -> rule_value == "b");
+    REQUIRE(subs["c"] -> sub_rules[1] -> rule_value == "Zero");
+    REQUIRE(subs["a"] -> rule_value == "a");
+
+    delete env;
+    delete specific;
+    delete general;
+} 
