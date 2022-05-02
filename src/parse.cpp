@@ -29,6 +29,9 @@ string parseStatement(string command, Env *env) {
 
     ostringstream out = ostringstream();
 
+    // This gets triggered if the line is read from a file
+    if (command[command.size() - 1] == '\n') command = command.substr(0, command.size() - 1);
+
     string first_word = command.substr(0, first_space);
 
     // Show the current environment.

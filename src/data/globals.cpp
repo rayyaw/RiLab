@@ -16,12 +16,6 @@ namespace rules {
     map<string, vector<string>> default_operators = {
         {"-->", {"Bool", "Bool", "Bool"}},  // Implication
         {"--<>", {"Bool", "Bool", "Bool"}}, // Equivalence
-        
-        {"!", {"Bool", "Bool"     }}, // NOT
-        {"&", {"Bool", "Bool", "Bool"}}, // AND
-        {"|", {"Bool", "Bool", "Bool"}}, // OR
-
-        {"|E", {"Bool", "Bool", "Bool"}}, // there exists
     };
 
     set<string> default_types = {
@@ -42,6 +36,8 @@ namespace rules {
         "show",
         "source",
         "literal",
+        "true",
+        "false",
         ""
     };
 

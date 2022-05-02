@@ -136,6 +136,8 @@ Env *setupEnv() {
     env -> operators = op_names;
     env -> type_vars = type_vars;
 
+    parseStatement("source tests/test.rilab", env);
+
     return env;
 }
 
@@ -290,7 +292,7 @@ TEST_CASE("TypeVar and Float literal", "[parseRule]") {
 }
 
 TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
-    string cmd = "+ (& 10 20.0) (|E TypeVar3 false)";
+    string cmd = "+ (& 10 20.0) (| TypeVar3 false)";
 
     Env *env = setupEnv();
     RuleTree *tree = parseRule(cmd, env);
@@ -299,7 +301,7 @@ TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
     oss << *tree;
 
     string tree_val = oss.str();
-    REQUIRE(tree_val == "(+ (& (Int 10) (Float 20.0)) (|E (Type TypeVar3) (Bool false)))");
+    REQUIRE(tree_val == "(+ (& (Int 10) (Float 20.0)) (| (Type TypeVar3) (Bool false)))");
 
     delete tree;
     delete env;
@@ -308,7 +310,7 @@ TEST_CASE("Full Nested Test (with grouping)", "[parseRule]") {
 
 // Test incorrect number of operator arguments
 TEST_CASE("Invalid number of operator arguments - user operator", "[parseRule]") {
-    string cmd = "+ (& 10 20.0) (|E OtherVar) 10";
+    string cmd = "+ (& 10 20.0) (| OtherVar) 10";
 
     Env *env = setupEnv();
     REQUIRE_THROWS(parseRule(cmd, env));
@@ -317,7 +319,7 @@ TEST_CASE("Invalid number of operator arguments - user operator", "[parseRule]")
 }
 
 TEST_CASE("Invalid number of operator arguments - default operator", "[parseRule]") {
-    string cmd = "|A (& 10 20.0) (|E OtherVar)";
+    string cmd = "|A (& 10 20.0) (--> true)";
 
     Env *env = setupEnv();
     REQUIRE_THROWS(parseRule(cmd, env));
@@ -520,6 +522,8 @@ Env *setup_type_env() {
     env -> type_vars = type_vars;
     env -> rules = set<RuleTree*>();
 
+    parseStatement("source tests/test.rilab", env);
+
     return env;
 }
 
@@ -693,7 +697,7 @@ TEST_CASE("Show statement", "[parseStatement]") {
     Env *env = setup_type_env();
 
     string output = parseStatement(command, env);
-    string expected = "Current env\n-------\n\nType Names (Local)\n-----\nReal\nnatural\n\nType Names (Global)\n-----\nBool\nFloat\nInt\n_\n\nTypeVars\n-----\nInputNumType\nNumType\n\nVariables\n-----\nIntVar1 (of type Int)\nIntVar2 (of type Int)\nNatVar (of type natural)\nOtherVar1 (of type InputNumType)\nOtherVar2 (of type InputNumType)\nRealVar (of type Real)\n\nLiterals\n-----\n\nOperators (Local)\n-----\n+ : NumType <- {NumType, NumType, }\n/ : Real <- {NumType, NumType, }\nE : Int <- {Float, natural, }\n[ : Bool <- {_, _, }\n] : Int <- {Int, Int, }\n\nOperators (Global)\n-----\n! : Bool <- {Bool, }\n& : Bool <- {Bool, Bool, }\n--<> : Bool <- {Bool, Bool, }\n--> : Bool <- {Bool, Bool, }\n| : Bool <- {Bool, Bool, }\n|E : Bool <- {Bool, Bool, }\n\nRules\n-----\n";
+    string expected = "Current env\n-------\n\nType Names (Local)\n-----\nReal\nnatural\n\nType Names (Global)\n-----\nBool\nFloat\nInt\n_\n\nTypeVars\n-----\nInputNumType\nNumType\n\nVariables\n-----\nIntVar1 (of type Int)\nIntVar2 (of type Int)\nNatVar (of type natural)\nOtherVar1 (of type InputNumType)\nOtherVar2 (of type InputNumType)\nRealVar (of type Real)\n\nLiterals\n-----\n\nOperators (Local)\n-----\n! : Bool <- {Bool, }\n& : Bool <- {Bool, Bool, }\n+ : NumType <- {NumType, NumType, }\n/ : Real <- {NumType, NumType, }\nE : Int <- {Float, natural, }\n[ : Bool <- {_, _, }\n] : Int <- {Int, Int, }\n| : Bool <- {Bool, Bool, }\n|E : Bool <- {Bool, Bool, }\n\nOperators (Global)\n-----\n--<> : Bool <- {Bool, Bool, }\n--> : Bool <- {Bool, Bool, }\n\nRules\n-----\n";
 
     REQUIRE(output == expected);
 

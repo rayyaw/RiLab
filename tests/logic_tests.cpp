@@ -27,7 +27,7 @@ Env *setupEnv() {
                                     {"E", "Int"}, {"o", "Int"}, {"d", "Type"}, {"f", "_"}};
     set<string> type_vars = {"Type"};
     vector<string> op_values = {"Int", "Int", "Int"}; 
-    map<string, vector<string>> op_names = {{"+", op_values}};
+    map<string, vector<string>> op_names = {{"+", op_values}, {"IsInt", {"Bool", "_"}}};
     set<string> type_names = {}; 
     map<string, string> literals = {{"Zero", "Int"}, {"One", "Int"}};
 
@@ -291,3 +291,79 @@ TEST_CASE("Successful generalization: Nested case", "[generalize]") {
     delete specific;
     delete general;
 } 
+
+// applyRule tests
+TEST_CASE("Rule application: Commutative Addition", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *victim = parseRule("+ c (+ b Zero)", env);
+    RuleTree *apply = parseRule("--<> (+ a b) (+ b a)", env);
+
+    RuleTree *applied = applyRule(env, apply, victim, true);
+
+    ostringstream out;
+    out << *applied;
+    REQUIRE(out.str() == "(+ (+ (Int b) (Int Zero)) (Int c))");
+
+    delete env;
+    delete victim;
+    delete apply;
+    delete applied;
+}
+
+TEST_CASE("Rule application: Associative Addition", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *victim = parseRule("+ a (+ b c)", env);
+    RuleTree *apply = parseRule("--<> (+ a b) (+ b a)", env);
+
+    RuleTree *applied = applyRule(env, apply, victim, false);
+
+    ostringstream out;
+    out << *applied;
+    REQUIRE(out.str() == "(+ (+ (Int b) (Int c)) (Int a))");
+
+    delete env;
+    delete victim;
+    delete apply;
+    delete applied;
+}
+
+TEST_CASE("Incorrect direction of -->", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *victim = parseRule("IsInt (+ c 1)", env);
+    RuleTree *apply = parseRule("--> (IsInt a) (IsInt (+ a 1))", env);
+
+    REQUIRE_THROWS(applyRule(env, apply, victim, false));
+
+    delete env;
+    delete victim;
+    delete apply;
+}
+
+TEST_CASE("Invalid operator, can't apply", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *victim = parseRule("IsInt (+ c 1)", env);
+    RuleTree *apply = parseRule("& (IsInt a) (IsInt (+ a 1))", env);
+
+    REQUIRE_THROWS(applyRule(env, apply, victim, false));
+
+    delete env;
+    delete victim;
+    delete apply;
+}
+
+TEST_CASE("Rule application: Integer Inclusion", "[generalize]") {
+    Env *env = setupEnv();
+    RuleTree *victim = parseRule("IsInt (+ c 1)", env);
+    RuleTree *apply = parseRule("--> (IsInt a) (IsInt (+ a 1))", env);
+
+    RuleTree *applied = applyRule(env, apply, victim, true);
+
+    ostringstream out;
+    out << *applied;
+    REQUIRE(out.str() == "(IsInt (Int c)");
+
+    delete env;
+    delete victim;
+    delete apply;
+    delete applied;
+}
