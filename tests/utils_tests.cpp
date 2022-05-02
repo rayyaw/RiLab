@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "../src/utils.h"
+#include "../src/data/utils.h"
 
 using std::string;
 

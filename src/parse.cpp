@@ -1,7 +1,7 @@
-#include "globals.h"
+#include "data/globals.h"
+#include "data/rule.h"
+#include "data/utils.h"
 #include "parse.h"
-#include "rule.h"
-#include "utils.h"
 
 #include <fstream>
 #include <iostream>
@@ -47,6 +47,11 @@ string parseStatement(string command, Env *env) {
         RuleTree *ask_rule = parseRule(remainder, env);
 
         typeCheck(ask_rule, env, map<string, string>());
+
+        if (ask_rule -> rule_type != "Bool") {
+            throw "IllegalArgumentException: Rules must be of type Bool";
+        }
+
         env -> ask_rule = ask_rule;
 
         out << "Asking " << *ask_rule << endl;
@@ -139,6 +144,12 @@ string parseStatement(string command, Env *env) {
         if (second_word == "rule") {
             RuleTree *rule = parseRule(remainder, env);
             typeCheck(rule, env, map<string, string>());
+
+            if (rule -> rule_type != "Bool") {
+                delete rule;
+                throw "IllegalArgumentException: Declared rules must be of type Bool";
+            }
+
             env -> rules.insert(rule);
 
             out << "Added Rule " << *rule << endl;
@@ -165,8 +176,6 @@ RuleTree *parseRule(string command, Env *env) {
     }
 
     RuleTree *current = new RuleTree();
-    current -> rule_value = "";
-    current -> rule_op = "";
 
     // Assume a rule is of the form (op a b ...) like how Haskell functions are applied
 
@@ -174,8 +183,6 @@ RuleTree *parseRule(string command, Env *env) {
     if (default_operators.find(command_parts[0]) != default_operators.end() ||
     op_names.find(command_parts[0]) != op_names.end()) {
         current -> rule_op = command_parts[0];
-
-        current -> sub_rules = vector<RuleTree*>();
 
         vector<string> op_params;
         if (default_operators.find(command_parts[0]) != default_operators.end()) {
@@ -186,6 +193,7 @@ RuleTree *parseRule(string command, Env *env) {
 
         // Check that the function argument count is correct
         if (op_params.size() != command_parts.size()) {
+            delete current;
             throw "IllegalArgumentException: Invalid number of arguments passed to function " + command_parts[0];
         }
 
@@ -209,8 +217,10 @@ RuleTree *parseRule(string command, Env *env) {
     else {
         // Check that there's only a single extra command_part, with no grouping.
         if (command_parts.size() != 1) {
+            delete current;
             throw "ParseException: Single values must be a single value at " + command;
         } else if (command_parts[0][0] == '(') {
+            delete current;
             throw "ParseException: Single values may not contain grouping at " + command_parts[0];
         }
 
@@ -254,6 +264,7 @@ RuleTree *parseRule(string command, Env *env) {
             return current;
         }
 
+        delete current;
         throw "ParseException: Undefined non-literal input " + command_parts[0];
 
     }

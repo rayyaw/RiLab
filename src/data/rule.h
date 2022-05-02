@@ -19,12 +19,18 @@ struct RuleTree {
 
     vector<RuleTree*> sub_rules;
 
+    RuleTree();
+    RuleTree(const RuleTree &other);
+    RuleTree &operator=(const RuleTree &other);
+    ~RuleTree();
+
     /**
      * @brief Print out a rule.
      * If this is a recursive rule, it'll print (rule_op [print children here])
      * Otherwise, it'll print (rule_type rule_value)
      */
     friend ostream &operator<<(ostream &os, RuleTree r);
+
 };
 
 struct Env {
@@ -41,7 +47,12 @@ struct Env {
 
     set<RuleTree*> rules;
 
+    // Used for running an ask
     RuleTree *ask_rule;
+    map<string, string> type_var_subs;
+
+    Env();
+    ~Env();
 
     /**
      * @brief Check if the given name is reserved or free in the environment.

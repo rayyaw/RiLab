@@ -14,18 +14,14 @@ using std::vector;
 namespace rules {
     // Note: _ is the default TypeVar. It will match against anything.
     map<string, vector<string>> default_operators = {
-        {"-->", {"_", "_", "_"}},  // Implication
-        {"--<>", {"_", "_", "_"}}, // Equivalence
+        {"-->", {"Bool", "Bool", "Bool"}},  // Implication
+        {"--<>", {"Bool", "Bool", "Bool"}}, // Equivalence
         
-        {"!", {"_", "_"     }}, // NOT
-        {"&", {"_", "_", "_"}}, // AND
-        {"|", {"_", "_", "_"}}, // OR
+        {"!", {"Bool", "Bool"     }}, // NOT
+        {"&", {"Bool", "Bool", "Bool"}}, // AND
+        {"|", {"Bool", "Bool", "Bool"}}, // OR
 
-        {":", {"_", "_", "_"}},  // such that
-        {"|A", {"_", "_"    }}, // for all
-        {"|E", {"_", "_"    }}, // there exists
-
-        {"in", {"_", "_", "_"}}  // Set/Type Inclusion
+        {"|E", {"Bool", "Bool", "Bool"}}, // there exists
     };
 
     set<string> default_types = {

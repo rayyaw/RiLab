@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 
 #include "globals.h"
 #include "rule.h"
@@ -7,7 +8,77 @@
 using namespace rules;
 
 using std::endl;
+using std::map;
 using std::ostream;
+
+RuleTree::RuleTree() {
+    rule_type = "";
+    rule_value = "";
+    rule_op = "";
+
+    sub_rules = vector<RuleTree*>();
+}
+
+RuleTree::RuleTree(const RuleTree &other) {
+    rule_type = other.rule_type;
+    rule_value = other.rule_value;
+    rule_op = other.rule_op;
+
+    sub_rules = vector<RuleTree*>();
+
+    for (RuleTree *r : other.sub_rules) {
+        RuleTree *r_cp = new RuleTree(*r);
+        sub_rules.push_back(r_cp);
+    }
+}
+
+RuleTree &RuleTree::operator=(const RuleTree &other) {
+    if (this != &other) {
+
+        this -> rule_type = other.rule_type;
+        this -> rule_value = other.rule_value;
+        this -> rule_op = other.rule_op;
+
+        this -> sub_rules = vector<RuleTree*>();
+
+        for (RuleTree *r : other.sub_rules) {
+            RuleTree *r_cp = new RuleTree(*r);
+            this -> sub_rules.push_back(r_cp);
+        }
+    }
+
+    return *this;
+}
+
+RuleTree::~RuleTree() {
+    for (RuleTree *r : sub_rules) { 
+        delete r;
+    }
+}
+
+Env::Env() {
+    type_vars = set<string>();
+    type_names = set<string>();
+    type_names = set<string>();
+
+    operators = map<string, vector<string>>(); 
+
+    variables = map<string, string>(); 
+    literals = map<string, string>();
+
+    rules = set<RuleTree*>();
+
+    ask_rule = nullptr;
+    type_var_subs = map<string, string>();
+}
+
+Env::~Env() {
+    for (RuleTree *r : rules) {
+        delete r;
+    }
+
+    delete ask_rule;
+}
 
 ostream &operator<<(ostream &os, RuleTree r) {
     os << "(";

@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "rule.h"
+#include "data/rule.h"
 
 using std::map;
 using std::set;

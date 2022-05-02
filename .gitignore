@@ -1,2 +1,4 @@
 bin/*
 .vscode/*
+__pycache__/*
+lineCounter.py
