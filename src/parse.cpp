@@ -197,7 +197,7 @@ RuleTree *parseRule(string command, Env *env) {
         // Check that the function argument count is correct
         if (op_params.size() != command_parts.size()) {
             delete current;
-            throw "IllegalArgumentException: Invalid number of arguments passed to function " + command_parts[0];
+            throw "IllegalArgumentException: Invalid number of arguments passed to function";
         }
 
         current -> rule_type = op_params[0];
@@ -221,10 +221,10 @@ RuleTree *parseRule(string command, Env *env) {
         // Check that there's only a single extra command_part, with no grouping.
         if (command_parts.size() != 1) {
             delete current;
-            throw "ParseException: Single values must be a single value at " + command;
+            throw "ParseException: Single values must be a single value";
         } else if (command_parts[0][0] == '(') {
             delete current;
-            throw "ParseException: Single values may not contain grouping at " + command_parts[0];
+            throw "ParseException: Single values may not contain grouping";
         }
 
         // Check whether this is a boolean.
@@ -268,7 +268,7 @@ RuleTree *parseRule(string command, Env *env) {
         }
 
         delete current;
-        throw "ParseException: Undefined non-literal input " + command_parts[0];
+        throw "ParseException: Undefined non-literal input" ;
 
     }
 
@@ -285,7 +285,7 @@ pair<string, string> parseVarDeclare(string command, Env *env) {
 
     // Check that the variable name isn't taken
     if (env -> isReservedName(command_parts[0])) {
-        throw "IllegalArgumentException: This name is already taken at " + command_parts[0];
+        throw "IllegalArgumentException: This name is already taken";
     }
 
     // Check that the variable type is valid
@@ -293,7 +293,7 @@ pair<string, string> parseVarDeclare(string command, Env *env) {
         return {command_parts[0], command_parts[1]};
     }
 
-    throw "IllegalArgumentException: No TypeName or TypeVar to match type " + command_parts[1]; 
+    throw "IllegalArgumentException: No TypeName or TypeVar to match type"; 
 
 }
 
@@ -301,7 +301,7 @@ string parseTypeVarName(string command, Env *env) {
 
     // Check that the variable name isn't taken
     if (env -> isReservedName(command)) {
-        throw "IllegalArgumentException: This name is already taken at " + command;
+        throw "IllegalArgumentException: This name is already taken";
     }
 
     return command;
@@ -316,7 +316,7 @@ pair<string, vector<string>> parseOpDeclare(string command, Env *env) {
 
     // Check that the variable name isn't taken
     if (env -> isReservedName(command_parts[0])) {
-        throw "IllegalArgumentException: This name is already taken at " + command_parts[0];
+        throw "IllegalArgumentException: This name is already taken";
     }
 
     pair<string, vector<string>> out = pair<string,vector<string>>();
@@ -326,7 +326,7 @@ pair<string, vector<string>> parseOpDeclare(string command, Env *env) {
     // Check that the variable type is valid
     for (size_t i = 1; i < command_parts.size(); i++) {
         if (!env -> isTypeName(command_parts[i])) {
-            throw "IllegalArgumentException: No TypeName or TypeVar to match type " + command_parts[i];
+            throw "IllegalArgumentException: No TypeName or TypeVar to match type";
             
         }
 
@@ -419,7 +419,7 @@ vector<string> splitCommand(string command) {
             case '(':
                 // If parentheses found, check for validity (open parentheses)
                 if (!parenthesis_level && block_start != i) {
-                    throw "ParseException: Parentheses must be separated by whitespace in " + command;
+                    throw "ParseException: Parentheses must be separated by whitespace";
                 }
 
                 parenthesis_level ++;
@@ -427,7 +427,7 @@ vector<string> splitCommand(string command) {
             case ')':
                 // No ( to match )
                 if (!parenthesis_level) {
-                    throw "ParseException: No ( found to match this ) in " + command;
+                    throw "ParseException: No ( found to match this )";
                 }
 
                 parenthesis_level --;
@@ -449,7 +449,7 @@ vector<string> splitCommand(string command) {
         }
          
     } else {
-        throw "ParseException: No ) found to match this ( in " + command;
+        throw "ParseException: No ) found to match this (";
     }
 
     return command_parts;

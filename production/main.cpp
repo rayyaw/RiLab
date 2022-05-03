@@ -32,20 +32,16 @@ static Env *env;
 static ThreadQueue *tasks;
 static ThreadQueue *results;
 
-extern bool queue_locked;
 extern bool stop_ask;
 
 // FIXME: write README
-// FIXME: test control-C proof stopping
 void handleSigint(int sig) {
     // Force children to stop and return to runWorker.
     stop_ask = true;
 
-    // Force the main thread to stop adding tasks (but don't stop runAsk).
-    // This also forces children to stop adding results.
-    queue_locked = true;
-
-    // Queues are emptied after runAsk returns to main
+    // Lock and clear the queues.
+    tasks -> lock();
+    results -> lock();
 }
 
 void *runWorker (void *unused) {
@@ -130,7 +126,8 @@ int main(int argc, char *argv[]) {
 
         if (env -> ask_rule) {
             try {
-                queue_locked = false;
+                tasks -> unlock();
+                results -> unlock();
                 stop_ask = false;
 
                 cout << runAsk(env, tasks, results);

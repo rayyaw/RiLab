@@ -7,8 +7,6 @@
 
 using std::queue;
 
-static bool queue_locked = false;
-
 // Producer-Consumer Queue with no max size. Thread safe.
 class ThreadQueue {
     public:
@@ -20,6 +18,9 @@ class ThreadQueue {
 
     void clear();
 
+    void lock();
+    void unlock();
+
     private:
     queue<ProofTreeNode*> q = queue<ProofTreeNode*>();
 
@@ -27,4 +28,6 @@ class ThreadQueue {
 
     pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t q_empty = PTHREAD_COND_INITIALIZER;
+
+    bool locked = false;
 };

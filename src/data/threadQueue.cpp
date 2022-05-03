@@ -10,7 +10,7 @@ ThreadQueue::~ThreadQueue() {
 }
 
 void ThreadQueue::push(ProofTreeNode *node) {
-    if (queue_locked) return;
+    if (locked) return;
     pthread_mutex_lock(&mtx);
         q.push(node);
         size++;
@@ -20,9 +20,13 @@ void ThreadQueue::push(ProofTreeNode *node) {
 }
 
 ProofTreeNode *ThreadQueue::pop() {
-    if (queue_locked) return nullptr;
+    if (locked) return nullptr;
     pthread_mutex_lock(&mtx);
-        while (size == 0) pthread_cond_wait(&q_empty, &mtx);
+        while (size == 0 && !locked) pthread_cond_wait(&q_empty, &mtx);
+        if (locked) {
+            pthread_mutex_unlock(&mtx);
+            return nullptr;
+        }
 
         ProofTreeNode *front = q.front();
         q.pop();
@@ -34,8 +38,17 @@ ProofTreeNode *ThreadQueue::pop() {
     return front;
 }
 
+void ThreadQueue::lock() {
+    locked = true;
+    clear();
+    pthread_cond_broadcast(&q_empty);
+}
+
+void ThreadQueue::unlock() {
+    locked = false;
+}
+
 void ThreadQueue::clear() {
-    // FIXME: Force acquire the mutex (kick all other threads out)
     pthread_mutex_lock(&mtx);
         queue<ProofTreeNode*> newq = queue<ProofTreeNode*>();
         std::swap(q, newq);

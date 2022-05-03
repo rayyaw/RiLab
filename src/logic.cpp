@@ -17,6 +17,8 @@ using std::queue;
 using std::string;
 using std::vector;
 
+bool stop_ask = false;
+
 string runAsk(Env *env, ThreadQueue *tasks, ThreadQueue *results) {
     // Initialize root rule
     RuleTree *ask = env -> ask_rule;

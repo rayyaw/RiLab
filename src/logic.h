@@ -10,7 +10,7 @@
 
 using std::queue;
 
-static bool stop_ask;
+extern bool stop_ask;
 
 /**
  * @brief Run an Ask query in the given environment
