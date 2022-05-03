@@ -9,6 +9,7 @@
 #include "data/tree.h"
 #include "logic.h"
 
+using std::endl;
 using std::ostringstream;
 using std::queue;
 using std::string;
@@ -222,9 +223,21 @@ RuleTree *applyRule(Env *env, RuleTree *apply, RuleTree *victim, bool direction)
     throw "GeneralizeError: Can only apply rules with --> or --<> (or incorrect direction)";
 }
 
-// FIXME
 string showProof(ProofTreeNode *leaf) {
-    throw "Unimplemented!";
+    ostringstream output;
+
+    // The two children nodes are duplicates (recurse down and check for tautology)
+    ProofTreeNode *current = leaf -> parent;
+    
+    // Recurse back up the tree.
+    while (current != nullptr) {
+        output << "==> " << *current -> to_prove_remainder << endl;
+        output << "Apply rule " << *current -> applied_rule << endl;
+        output << endl;
+        current = current -> parent;
+    }
+
+    return output.str();
 }
 
 RuleTree *substitute(Env *env, RuleTree *original, map<string, RuleTree*> substitutions) {

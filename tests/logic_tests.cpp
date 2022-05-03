@@ -381,14 +381,17 @@ TEST_CASE("Simple proof (2 in N)", "[runAskWorker]") {
 
     ProofTreeNode *root = new ProofTreeNode();
 
-    root -> to_prove_remainder = parseRule("InNatural Two", env);
+    RuleTree *to_prove = parseRule("InNatural Two", env);
+    root -> to_prove_remainder = new RuleTree(*to_prove);
     root -> applied_rule = parseRule("--<> (InNatural Two) (InNatural (S (S Zero)))", env);
 
     ProofTreeNode *leaf = runAskWorker(env, 5, root);
 
-    // FIXME check output
-    //string proof = showProof(leaf);
+    string proof = showProof(leaf);
 
+    REQUIRE(proof == "==> (InNatural (Natural Zero))\nApply rule (--> (InNatural (Natural x)) (InNatural (S (Natural x))))\n\n==> (InNatural (S (Natural Zero)))\nApply rule (--> (InNatural (Natural x)) (InNatural (S (Natural x))))\n\n==> (InNatural (S (S (Natural Zero))))\nApply rule (--<> (InNatural (Natural Two)) (InNatural (S (S (Natural Zero)))))\n\n");
+
+    delete to_prove;
     delete root -> applied_rule;
     delete root;
     delete env;
