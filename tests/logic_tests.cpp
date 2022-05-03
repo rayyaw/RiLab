@@ -1,6 +1,7 @@
 #include "catch.hpp"
 
 #include "../src/data/rule.h"
+#include "../src/data/tree.h"
 #include "../src/logic.h"
 #include "../src/parse.h"
 
@@ -366,4 +367,29 @@ TEST_CASE("Rule application: Integer Inclusion", "[generalize]") {
     delete victim;
     delete apply;
     delete applied;
+}
+
+// runAskWorker tests
+Env *setupMathEnv() {
+    Env *env = new Env();
+    parseStatement("source tests/nat.rilab", env);
+    return env;
+}
+
+TEST_CASE("Simple proof (2 in N)", "[runAskWorker]") {
+    Env *env = setupMathEnv();
+
+    ProofTreeNode *root = new ProofTreeNode();
+
+    root -> to_prove_remainder = parseRule("InNatural Two", env);
+    root -> applied_rule = parseRule("--<> (InNatural Two) (InNatural (S (S Zero)))", env);
+
+    ProofTreeNode *leaf = runAskWorker(env, 5, root);
+
+    // FIXME check output
+    //string proof = showProof(leaf);
+
+    delete root -> applied_rule;
+    delete root;
+    delete env;
 }

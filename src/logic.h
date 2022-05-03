@@ -35,7 +35,6 @@ struct ThreadInfo {
     pthread_cond_t *result_cv;
 };
 
-// FIXME make fully multithreaded
 /**
  * @brief Run an Ask query in the given environment
  * 
@@ -44,17 +43,17 @@ struct ThreadInfo {
  * @param threads Thread information to use.
  * @return a string with the proof if the statement is PROVABLY true, or "Could not prove X" otherwise.
  */
-string runAsk (Env *env, size_t recursion_limit, ThreadInfo threads);
+string runAsk(Env *env, size_t recursion_limit, ThreadInfo threads);
 
 /**
  * @brief Partial Run Ask only used in threads.
  * 
  * @param env The environment to run on. env -> ask_rule should be the rule to run.
- * @param task Information on the task to run.
- * @return a result corresponding to the proof, 
- * or interrupted if another thread finishes a proof first.
+ * @param recursion_limit The max recursion depth to go to.
+ * @param root The proof tree node to start from.
+ * @return The leaf node (in the same tree) that reached a tautology.
  */
-Result runAskWorker (Env *env, const Task &task);
+ProofTreeNode *runAskWorker(Env *env, size_t recursion_limit, ProofTreeNode *root);
 
 /**
  * @brief Apply one rule to another.

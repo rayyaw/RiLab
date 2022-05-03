@@ -1,5 +1,7 @@
-//#include <pthread.h>
+#include <iostream>
+#include <pthread.h>
 #include <queue>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -7,6 +9,7 @@
 #include "data/tree.h"
 #include "logic.h"
 
+using std::ostringstream;
 using std::queue;
 using std::string;
 using std::vector;
@@ -41,16 +44,9 @@ string runAsk(Env *env, size_t recursion_limit, ThreadInfo threads) {
         for (RuleTree *rule : env -> rules) {
             try {
                 generalize(env, rule, current -> to_prove_remainder, map<string, RuleTree*>());
-                return showProof(current);
-            } catch (const char &e) {
-                // Do nothing, this is a dead end
-            }
-        }
-
-        for (RuleTree *rule : env -> rules) {
-            try {
-                generalize(env, rule, current -> to_prove_remainder, map<string, RuleTree*>());
-                return showProof(current);
+                string proof = showProof(current);
+                delete tree_root;
+                return proof;
             } catch (const char &e) {
                 // Do nothing, this is a dead end
             }
@@ -95,7 +91,81 @@ string runAsk(Env *env, size_t recursion_limit, ThreadInfo threads) {
         }
     }
 
-    return "Was unable to prove the rule"; 
+    delete tree_root;
+    throw "RecursionLimitReached: Was unable to prove the rule"; 
+
+}
+
+ProofTreeNode *runAskWorker(Env *env, size_t recursion_limit, ProofTreeNode *root) {
+    // Initialize root rule    
+    queue<ProofTreeNode*> next_rules;
+    next_rules.push(root);
+
+    size_t states_to_expand = 1;
+    size_t next_layer_states = 0;
+
+    // Use standard BFS with a recursion limit
+    while (!next_rules.empty()) {
+        ProofTreeNode *current = next_rules.front();
+        next_rules.pop();
+
+        // Check if the rule (or its substitution) is equal (up to varsubs) to an existing rule. 
+        // If so, print the proof and return.
+        for (RuleTree *rule : env -> rules) {
+            try {
+                generalize(env, rule, current -> to_prove_remainder, map<string, RuleTree*>());
+                return current;
+            } catch (char const *e) {
+                // Do nothing, this is a dead end
+            }
+        }
+
+        // Apply both directions
+        try {
+            // Apply then expand and push back
+            RuleTree *new_rule = applyRule(env, current -> applied_rule, current -> to_prove_remainder, true);
+            delete current -> to_prove_remainder;
+            current -> to_prove_remainder = new_rule;
+
+            expandNode(current, env);
+            next_layer_states += current -> children.size();
+            
+            for (ProofTreeNode *child : current -> children) next_rules.push(child);
+
+        } catch (char const *e) {
+            // Could not apply the rule, so continue
+        }
+
+        try {
+            // Apply then expand and push back
+            RuleTree *new_rule = applyRule(env, current -> applied_rule, current -> to_prove_remainder, false);
+            delete current -> to_prove_remainder;
+            current -> to_prove_remainder = new_rule;
+
+            expandNode(current, env);
+            next_layer_states += current -> children.size();
+
+            for (ProofTreeNode *child : current -> children) next_rules.push(child);
+
+        } catch (char const *e) {
+            // Could not apply the rule, so continue
+        }
+
+        // Check if we've reached the recursion limit
+        states_to_expand --;
+
+        if (states_to_expand == 0) {
+            recursion_limit --;
+            states_to_expand = next_layer_states;
+            next_layer_states = 0;
+        }
+
+        if (recursion_limit == 0) {
+            break;
+        }
+    }
+
+    throw "RecursionLimitReached: Was unable to prove the rule";
 
 }
 
@@ -103,7 +173,7 @@ void expandNode(ProofTreeNode *node, Env *env) {
     for (RuleTree *rule : env -> rules) {
         ProofTreeNode *child = new ProofTreeNode();
         child -> parent = node;
-        child -> to_prove_remainder = node -> to_prove_remainder;
+        child -> to_prove_remainder = new RuleTree(*node -> to_prove_remainder);
         child -> applied_rule = rule;
 
         node -> children.insert(child);

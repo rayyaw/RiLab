@@ -1,4 +1,5 @@
 #include "tree.h"
+#include "rule.h"
 
 ProofTreeNode::~ProofTreeNode() {
     for (ProofTreeNode *child : children) {
