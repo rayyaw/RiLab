@@ -36,7 +36,7 @@ extern bool queue_locked;
 extern bool stop_ask;
 
 // FIXME: write README
-// FIXME: test with valgrind + control-C proof stopping
+// FIXME: test control-C proof stopping
 void handleSigint(int sig) {
     // Force children to stop and return to runWorker.
     stop_ask = true;
@@ -53,6 +53,8 @@ void *runWorker (void *unused) {
     while (true) {
         // Get a new task to run.
         ProofTreeNode *node = tasks -> pop();
+
+        if (node == nullptr) break;
 
         try {
             ProofTreeNode *result = runAskWorker(env, recursion_limit, node);
@@ -142,9 +144,18 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // FIXME - cleanup threads / fix memory leaks
+    // Force all threads to exit
+    for (int i = 0; i < num_threads; i++) {
+        tasks -> push(nullptr);
+    }
+
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
     delete[] threads;
     delete env;
+
     return 0;
 
 }
