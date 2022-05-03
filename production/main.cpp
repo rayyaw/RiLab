@@ -34,7 +34,6 @@ static ThreadQueue *results;
 
 extern bool stop_ask;
 
-// FIXME: write README
 void handleSigint(int sig) {
     // Force children to stop and return to runWorker.
     stop_ask = true;
