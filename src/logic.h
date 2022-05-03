@@ -5,45 +5,20 @@
 #include <vector>
 
 #include "data/rule.h"
+#include "data/threadQueue.h"
 #include "data/tree.h"
 
 using std::queue;
-
-// FIXME
-struct Task {
-    void *unused;
-};
-
-struct Result {
-    void *unused;
-};
-
-// Info on the threads in use
-struct ThreadInfo {
-    size_t num_threads;
-
-    // I/O Queues
-    queue<Task> *task_q;
-    queue<Result> *result_q;
-
-    // Mutex for I/O Queues
-    pthread_mutex_t *task_mutex;
-    pthread_mutex_t *result_mutex;
-
-    // Condition Variables for I/O Queues
-    pthread_cond_t *task_cv;
-    pthread_cond_t *result_cv;
-};
 
 /**
  * @brief Run an Ask query in the given environment
  * 
  * @param env The environment to run on. env -> ask_rule should be the rule to run.
- * @param recursion_limit The maximum recursion depth to go to.
- * @param threads Thread information to use.
+ * @param tasks The queue for sending tasks to threads
+ * @param results The queue for getting results from threads
  * @return a string with the proof if the statement is PROVABLY true, or "Could not prove X" otherwise.
  */
-string runAsk(Env *env, size_t recursion_limit, ThreadInfo threads);
+string runAsk(Env *env, ThreadQueue *tasks, ThreadQueue *results);
 
 /**
  * @brief Partial Run Ask only used in threads.

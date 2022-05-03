@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "data/threadQueue.h"
 #include "data/rule.h"
 #include "data/tree.h"
 #include "logic.h"
@@ -15,80 +16,31 @@ using std::queue;
 using std::string;
 using std::vector;
 
-string runAsk(Env *env, size_t recursion_limit, ThreadInfo threads) {
+string runAsk(Env *env, ThreadQueue *tasks, ThreadQueue *results) {
     // Initialize root rule
     RuleTree *ask = env -> ask_rule;
-    
-    queue<ProofTreeNode*> next_rules;
 
     ProofTreeNode *tree_root = new ProofTreeNode();
 
     tree_root -> to_prove_remainder = ask;
     tree_root -> applied_rule = nullptr;
 
+    size_t task_count = 0;
+
     expandNode(tree_root, env);
-
-    size_t states_to_expand = tree_root -> children.size();
-    size_t next_layer_states = 0;
-
-    for (ProofTreeNode *node : tree_root -> children) {
-        next_rules.push(node);
+    for (ProofTreeNode *child : tree_root -> children) {
+        tasks -> push(child);
+        task_count++;
     }
 
-    // Use a single iteration then send all tasks to the threads
-    while (!next_rules.empty()) {
-        ProofTreeNode *current = next_rules.front();
-        next_rules.pop();
+    // Merge from threads and output the final result
+    for (size_t i = 0; i < task_count; i++) {
+        ProofTreeNode *node = results -> pop();
 
-        // Check if the rule (or its substitution) is equal (up to varsubs) to an existing rule. 
-        // If so, print the proof and return.
-        for (RuleTree *rule : env -> rules) {
-            try {
-                generalize(env, rule, current -> to_prove_remainder, map<string, RuleTree*>());
-                string proof = showProof(current);
-                delete tree_root;
-                return proof;
-            } catch (const char &e) {
-                // Do nothing, this is a dead end
-            }
-        }
-
-        // Apply both directions
-        try {
-            // Apply then expand and push back
-            RuleTree *new_rule = applyRule(env, current -> applied_rule, current -> to_prove_remainder, true);
-            current -> to_prove_remainder = new_rule;
-
-            expandNode(current, env);
-            next_layer_states += current -> children.size();
-
-        } catch (char const &e) {
-            // Could not apply the rule, so continue
-        }
-
-        try {
-            // Apply then expand and push back
-            RuleTree *new_rule = applyRule(env, current -> applied_rule, current -> to_prove_remainder, false);
-            current -> to_prove_remainder = new_rule;
-
-            expandNode(current, env);
-            next_layer_states += current -> children.size();
-
-        } catch (char const &e) {
-            // Could not apply the rule, so continue
-        }
-
-        // Check if we've reached the recursion limit
-        states_to_expand --;
-
-        if (states_to_expand == 0) {
-            recursion_limit --;
-            states_to_expand = next_layer_states;
-            next_layer_states = 0;
-        }
-
-        if (recursion_limit == 0) {
-            break;
+        if (node != nullptr) {
+            string proof = showProof(node);
+            delete tree_root;
+            return proof;
         }
     }
 

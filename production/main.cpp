@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "../src/data/rule.h"
+#include "../src/data/tree.h"
 #include "../src/logic.h"
 #include "../src/parse.h"
 
@@ -23,46 +24,30 @@ using std::set;
 using std::vector;
 
 // Global variables
-#define RECURSION_LIMIT 100
+static size_t recursion_limit;
 
-static volatile Env *env;
-// UNCOMMENT WHEN USING MULTITHREADING --- FIXME
-/*
-static volatile queue<Task> tasks;
-static volatile queue<Result> results;
+static Env *env;
 
-pthread_mutex_t task_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t result_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-pthread_cond_t task_cv = PTHREAD_COND_INITIALIZER;
-pthread_cond_t result_cv = PTHREAD_COND_INITIALIZER;
+static ThreadQueue *tasks;
+static ThreadQueue *results;
 
 void *runWorker (void *unused) {
     // This will stop when main returns, so no need to have a variable to force exit.
     while (true) {
         // Get a new task to run.
-        pthread_mutex_lock(&task_mutex);
-            while (tasks.empty()) {
-                pthread_cond_wait(&task_cv, &task_mutex);
-            }
+        ProofTreeNode *node = tasks -> pop();
 
-            Task task = tasks.front();
-            tasks.pop();
-        pthread_mutex_unlock(&task_mutex);
-
-        Result result = runAskWorker(env, task);
-
-        // Return the results of the current task.
-        pthread_mutex_lock(&result_mutex);
-            results.push(result);
-            pthread_cond_signal(&result_cv);
-        pthread_mutex_unlock(&result_mutex);
-
+        try {
+            ProofTreeNode *result = runAskWorker(env, recursion_limit, node);
+            results -> push(result);
+        } catch (char const *e) {
+            results -> push(nullptr);
+        }
+        
     }
 
     return nullptr;
 }
-*/
 
 // Get a command from the given istream.
 void handleIOCommand(istream &in, Env *env) {
@@ -84,15 +69,23 @@ void handleIOCommand(istream &in, Env *env) {
 
 int main(int argc, char *argv[]) {
     
-    if (argc != 2) {
-        cout << "Usage: rilab <num_threads>" << endl;
+    if (argc > 3) {
+        cerr << "Usage: rilab [num_threads] [recursion_limit]" << endl;
         return -1;
     }
 
-    env = new env();
+    env = new Env();
+    tasks = new ThreadQueue();
+    results = new ThreadQueue();
 
-    int num_threads = atoi(argv[1]);
-    if (num_threads <= 0 || num_threads >= 255) num_threads = 10;
+    // Setting ask parameters.
+    size_t num_threads;
+    if (argc >= 1) num_threads = atoi(argv[1]);
+    else num_threads = 4;
+    if (num_threads <= 0 || num_threads >= 255) num_threads = 4;
+
+    if (argc == 2) recursion_limit = atoi(argv[2]);
+    else recursion_limit = 10;
 
     // Start threads.
     pthread_t *threads = new pthread_t[num_threads];
@@ -100,18 +93,6 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < num_threads; i++) {
         pthread_create(threads + i, NULL, runWorker, NULL);
     }
-
-    // Thread info to send for runAsk.
-    ThreadInfo threads = ThreadInfo();
-    threads.num_threads = num_threads;
-    threads.task_q = &tasks;
-    threads.result_q = &results;
-
-    threads.task_mutex = &task_mutex;
-    threads.result_mutex = &result_mutex;
-
-    threads.task_cv = &task_cv;
-    threads.result_cv = &result_cv;
 
     // Print basic info about RiLab.
     cout << "RiLab Theorem Proving Software." << endl;
@@ -126,7 +107,11 @@ int main(int argc, char *argv[]) {
 
         // FIXME: Add signal handler on control+C to break out of this. (use sigaction)
         if (env -> ask_rule) {
-            cout << runAsk(env, RECURSION_LIMIT, threads);
+            try {
+                cout << runAsk(env, tasks, results);
+            } catch (char const *e) {
+                cerr << e << endl;
+            }
         }
     }
 
