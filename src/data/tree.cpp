@@ -6,5 +6,6 @@ ProofTreeNode::~ProofTreeNode() {
         delete child;
     }
 
+    delete applied_rule;
     delete to_prove_remainder;
 }

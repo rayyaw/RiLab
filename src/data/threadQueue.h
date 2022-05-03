@@ -7,6 +7,8 @@
 
 using std::queue;
 
+static bool queue_locked = false;
+
 // Producer-Consumer Queue with no max size. Thread safe.
 class ThreadQueue {
     public:
@@ -15,6 +17,8 @@ class ThreadQueue {
 
     void push(ProofTreeNode *node);
     ProofTreeNode *pop();
+
+    void clear();
 
     private:
     queue<ProofTreeNode*> q = queue<ProofTreeNode*>();

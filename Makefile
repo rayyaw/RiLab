@@ -29,6 +29,31 @@ parse_debug: parse catch parse_test rule globals
 logic_debug: logic_test catch rule logic tree utils
 	g++ bin/threadQueue.o bin/catch.o bin/parse.o bin/globals.o bin/rule.o bin/logic.o bin/tree.o bin/utils.o bin/logic_test.o -o bin/logic_debug
 
+globals_thread:
+	g++ -g -o bin/globals_thread.o -c src/data/globals.cpp -pthread
+rule_thread: globals_thread utils_thread
+	g++ -g -o bin/rule_thread.o -c src/data/rule.cpp -pthread
+utils_thread:
+	g++ -g -o bin/utils_thread.o -c src/data/utils.cpp -pthread
+parse_thread: rule_thread utils_thread globals_thread
+	g++ -g -o bin/parse_thread.o -c src/parse.cpp -pthread
+tree_thread: rule_thread
+	g++ -g -o bin/tree_thread.o -c src/data/tree.cpp -pthread
+threadQueue_thread: rule_thread tree_thread
+	g++ -g -o bin/threadQueue_thread.o -c src/data/threadQueue.cpp -pthread
+logic_thread: rule_thread tree_thread threadQueue_thread
+	g++ -g -o bin/logic_thread.o -c src/logic.cpp -pthread
+catch_thread:
+	g++ -o bin/catch_thread.o -c tests/catch_main.cpp -pthread
+thread_tests: catch_thread logic_thread tree_thread rule_thread parse_thread threadQueue_thread
+	g++ -g -o bin/thread_tests.o -c tests/thread_tests.cpp -pthread
+thread_debug: catch_thread logic_thread tree_thread rule_thread parse_thread threadQueue_thread thread_tests
+	g++ bin/thread_tests.o bin/catch_thread.o bin/logic_thread.o bin/threadQueue_thread.o bin/tree_thread.o bin/parse_thread.o bin/utils_thread.o bin/rule_thread.o bin/globals_thread.o -o bin/thread_debug -pthread
+main_thread: logic_thread tree_thread rule_thread parse_thread threadQueue_thread
+	g++ -g -o bin/main_thread.o -c production/main.cpp -pthread
+main_debug: logic_thread tree_thread rule_thread parse_thread threadQueue_thread main_thread
+	g++ bin/logic_thread.o bin/threadQueue_thread.o bin/tree_thread.o bin/parse_thread.o bin/utils_thread.o bin/rule_thread.o bin/globals_thread.o bin/main_thread.o -o bin/main_debug -pthread
+
 production_globals:
 	g++ -O2 -o bin/production_globals.o -c src/data/globals.cpp -pthread
 production_rule: production_globals production_utils

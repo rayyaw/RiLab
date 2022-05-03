@@ -343,8 +343,11 @@ map<string, string> typeCheck(RuleTree *rule, Env *env, map<string, string> boun
         return bound_types;
     }
 
-    vector<string> cur_types = env -> operators[rule -> rule_op];
-    if (cur_types.size() == 0) cur_types = default_operators[rule -> rule_op];
+    vector<string> cur_types;
+
+    if (env -> operators.find(rule -> rule_op) != env -> operators.end()) {
+        cur_types = env -> operators[rule -> rule_op];
+    } else cur_types = default_operators[rule -> rule_op];
 
     // Recursive Case: Type Check subrules
     for (size_t i = 0; i < rule -> sub_rules.size(); i++) {

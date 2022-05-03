@@ -1,6 +1,7 @@
 #include <iostream>
 #include <pthread.h>
 #include <queue>
+#include <signal.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -19,6 +20,8 @@ using std::vector;
 string runAsk(Env *env, ThreadQueue *tasks, ThreadQueue *results) {
     // Initialize root rule
     RuleTree *ask = env -> ask_rule;
+
+    if (ask == nullptr) throw "Invalid Ask query";
 
     ProofTreeNode *tree_root = new ProofTreeNode();
 
@@ -39,6 +42,10 @@ string runAsk(Env *env, ThreadQueue *tasks, ThreadQueue *results) {
 
         if (node != nullptr) {
             string proof = showProof(node);
+
+            // Send SIGINT to stop the other threads and empty the queues
+            raise(SIGINT);
+
             delete tree_root;
             return proof;
         }
@@ -67,9 +74,11 @@ ProofTreeNode *runAskWorker(Env *env, size_t recursion_limit, ProofTreeNode *roo
         for (RuleTree *rule : env -> rules) {
             try {
                 generalize(env, rule, current -> to_prove_remainder, map<string, RuleTree*>());
-                return current;
+
+                if (stop_ask) throw "SIGINT: User interrupt received";
+                else return current;
             } catch (char const *e) {
-                // Do nothing, this is a dead end
+                if (stop_ask) throw "SIGINT: User interrupt received";
             }
         }
 
@@ -127,7 +136,7 @@ void expandNode(ProofTreeNode *node, Env *env) {
         ProofTreeNode *child = new ProofTreeNode();
         child -> parent = node;
         child -> to_prove_remainder = new RuleTree(*node -> to_prove_remainder);
-        child -> applied_rule = rule;
+        child -> applied_rule = new RuleTree(*rule);
 
         node -> children.insert(child);
     }
@@ -182,7 +191,7 @@ string showProof(ProofTreeNode *leaf) {
     ProofTreeNode *current = leaf -> parent;
     
     // Recurse back up the tree.
-    while (current != nullptr) {
+    while (current != nullptr && current -> applied_rule != nullptr) {
         output << "==> " << *current -> to_prove_remainder << endl;
         output << "Apply rule " << *current -> applied_rule << endl;
         output << endl;
