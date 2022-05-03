@@ -1,0 +1,4 @@
+declare operator & Bool Bool Bool
+declare operator | Bool Bool Bool
+declare operator ! Bool Bool
+declare operator |E Bool Bool Bool

@@ -34,7 +34,7 @@ string runAsk(Env *env, size_t recursion_limit, ThreadInfo threads) {
         next_rules.push(node);
     }
 
-    // Use standard BFS with a recursion limit
+    // Use a single iteration then send all tasks to the threads
     while (!next_rules.empty()) {
         ProofTreeNode *current = next_rules.front();
         next_rules.pop();

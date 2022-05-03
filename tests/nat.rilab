@@ -1,0 +1,10 @@
+declare type Natural
+declare operator S Natural Natural
+declare operator InNatural Bool _
+declare literal Zero Natural
+declare var x Natural
+declare rule InNatural Zero
+declare rule --> (InNatural x) (InNatural (S x))
+
+declare literal Two Natural
+declare rule --<> (InNatural Two) (InNatural (S (S Zero)))

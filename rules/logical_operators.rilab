@@ -1,0 +1,12 @@
+declare operator & Bool Bool Bool
+declare operator | Bool Bool Bool
+declare operator ! Bool Bool
+
+declare var a Bool
+declare var b Bool
+
+declare rule --> (& a b) a
+declare rule --> (& a b) b
+
+declare rule --> (--<> a b) (--> a b)
+declare rule --> (--<> a b) (--> b a)
