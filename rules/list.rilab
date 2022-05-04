@@ -17,6 +17,3 @@ declare rule --> (InList x lst1) (InList x (Push y lst1))
 
 declare literal FibList List
 declare rule --> (InList x (Push 1 (Push 2 (Push 3 (Push Five Empty))))) (InList x FibList)
-
-show
-show

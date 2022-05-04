@@ -44,6 +44,8 @@ void handleSigint(int sig) {
 }
 
 void *runWorker (void *unused) {
+    signal(SIGINT, SIG_IGN);
+
     // This will stop when main returns, so no need to have a variable to force exit.
     while (true) {
         // Get a new task to run.

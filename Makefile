@@ -55,21 +55,21 @@ main_debug: logic_thread tree_thread rule_thread parse_thread threadQueue_thread
 	g++ bin/logic_thread.o bin/threadQueue_thread.o bin/tree_thread.o bin/parse_thread.o bin/utils_thread.o bin/rule_thread.o bin/globals_thread.o bin/main_thread.o -o bin/main_debug -pthread
 
 production_globals:
-	g++ -O0 -o bin/production_globals.o -c src/data/globals.cpp -pthread
+	g++ -O2 -o bin/production_globals.o -c src/data/globals.cpp -pthread
 production_rule: production_globals production_utils
-	g++ -O0 -o bin/production_rule.o -c src/data/rule.cpp -pthread
+	g++ -O2 -o bin/production_rule.o -c src/data/rule.cpp -pthread
 production_utils:
-	g++ -O0 -o bin/production_utils.o -c src/data/utils.cpp -pthread
+	g++ -O2 -o bin/production_utils.o -c src/data/utils.cpp -pthread
 production_threadQueue: production_rule production_tree
-	g++ -O0 -o bin/production_threadQueue.o -c src/data/threadQueue.cpp -pthread
+	g++ -O2 -o bin/production_threadQueue.o -c src/data/threadQueue.cpp -pthread
 production_parse: production_rule production_utils production_globals
-	g++ -O0 -o bin/production_parse.o -c src/parse.cpp -pthread
+	g++ -O2 -o bin/production_parse.o -c src/parse.cpp -pthread
 production_tree: production_rule
-	g++ -O0 -o bin/production_tree.o -c src/data/tree.cpp -pthread
+	g++ -O2 -o bin/production_tree.o -c src/data/tree.cpp -pthread
 production_logic: production_rule production_tree production_threadQueue
-	g++ -O0 -o bin/production_logic.o -c src/logic.cpp -pthread
+	g++ -O2 -o bin/production_logic.o -c src/logic.cpp -pthread
 main: production_parse production_rule production_logic production_threadQueue
-	g++ -O0 -o bin/main.o -c production/main.cpp -pthread
+	g++ -O2 -o bin/main.o -c production/main.cpp -pthread
 
 production: production_rule production_utils production_globals main production_logic production_tree
 	g++ bin/production_threadQueue.o bin/production_tree.o bin/production_logic.o bin/production_globals.o bin/production_rule.o bin/production_utils.o bin/production_parse.o bin/main.o -o bin/RiLab -pthread

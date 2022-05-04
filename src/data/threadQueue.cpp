@@ -1,3 +1,4 @@
+#include <iostream>
 #include <pthread.h>
 #include <utility>
 
@@ -10,17 +11,15 @@ ThreadQueue::~ThreadQueue() {
 }
 
 void ThreadQueue::push(ProofTreeNode *node) {
-    if (locked) return;
     pthread_mutex_lock(&mtx);
         q.push(node);
         size++;
 
-        pthread_cond_signal(&q_empty);
+        pthread_cond_broadcast(&q_empty);
     pthread_mutex_unlock(&mtx);
 }
 
 ProofTreeNode *ThreadQueue::pop() {
-    if (locked) return nullptr;
     pthread_mutex_lock(&mtx);
         while (size == 0 && !locked) pthread_cond_wait(&q_empty, &mtx);
         if (locked) {
@@ -39,13 +38,17 @@ ProofTreeNode *ThreadQueue::pop() {
 }
 
 void ThreadQueue::lock() {
-    locked = true;
     clear();
-    pthread_cond_broadcast(&q_empty);
+    pthread_mutex_lock(&mtx);
+        locked = true;
+        pthread_cond_broadcast(&q_empty);
+    pthread_mutex_unlock(&mtx);
 }
 
 void ThreadQueue::unlock() {
-    locked = false;
+    pthread_mutex_lock(&mtx);
+        locked = false;
+    pthread_mutex_unlock(&mtx);
 }
 
 void ThreadQueue::clear() {
