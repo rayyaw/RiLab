@@ -6,7 +6,7 @@ using std::string;
 
 // Taken from https://linuxhint.com/check-integer-input-cpp/. Checks if a string is an integer.
 bool isInt(string v) {
-    for (int i = 0; i < v.length(); i++) {
+    for (size_t i = 0; i < v.length(); i++) {
         if (!isdigit(v[i])) return false;
     }
         
@@ -16,7 +16,7 @@ bool isInt(string v) {
 // Modified from the code above. Checks if the string is a valid float.
 bool isFloat(string v) {
     bool no_dot = true;
-    for (int i = 0; i < v.length(); i++) {
+    for (size_t i = 0; i < v.length(); i++) {
         if (!isdigit(v[i])) {
             if (v[i] == '.' && no_dot) no_dot = false;
             else return false;

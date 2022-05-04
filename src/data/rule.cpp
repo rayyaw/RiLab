@@ -72,7 +72,6 @@ RuleTree::~RuleTree() {
 Env::Env() {
     type_vars = set<string>();
     type_names = set<string>();
-    type_names = set<string>();
 
     operators = map<string, vector<string>>(); 
 
@@ -85,6 +84,48 @@ Env::Env() {
     type_var_subs = map<string, string>();
 }
 
+Env::Env(const Env &other) {
+    type_vars = other.type_vars;
+    type_names = other.type_names;
+
+    operators = other.operators; 
+
+    variables = other.variables; 
+    literals = other.literals;
+
+    rules = set<RuleTree*>();
+
+    for (RuleTree *r : other.rules) {
+        rules.insert(new RuleTree(*r));
+    }
+
+    ask_rule = nullptr;
+    type_var_subs = map<string, string>();    
+}
+
+Env &Env::operator=(const Env &other) {
+    if (this != &other) {
+        type_vars = other.type_vars;
+        type_names = other.type_names;
+
+        operators = other.operators; 
+
+        variables = other.variables; 
+        literals = other.literals;
+
+        rules = set<RuleTree*>();
+
+        for (RuleTree *r : other.rules) {
+            rules.insert(new RuleTree(*r));
+        }
+
+        ask_rule = nullptr;
+        type_var_subs = map<string, string>();
+    }
+
+    return *this;
+}
+
 Env::~Env() {
     for (RuleTree *r : rules) {
         delete r;
@@ -93,7 +134,7 @@ Env::~Env() {
     delete ask_rule;
 }
 
-ostream &operator<<(ostream &os, RuleTree r) {
+ostream &operator<<(ostream &os, const RuleTree &r) {
     os << "(";
     
     // Either the rule has a value, or children
