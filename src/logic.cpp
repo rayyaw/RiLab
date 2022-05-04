@@ -90,6 +90,7 @@ ProofTreeNode *runAskWorker(Env *env, size_t recursion_limit, ProofTreeNode *roo
             RuleTree *new_rule = applyRule(env, current -> applied_rule, current -> to_prove_remainder, true);
             delete current -> to_prove_remainder;
             current -> to_prove_remainder = new_rule;
+            std::cerr<<current->to_prove_remainder<<endl;
 
             expandNode(current, env);
             next_layer_states += current -> children.size();
