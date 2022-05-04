@@ -181,7 +181,6 @@ RuleTree *applyRule(Env *env, RuleTree *apply, RuleTree *victim, bool direction)
         map<string, RuleTree*> subs = generalize(env, apply -> sub_rules[0], victim, map<string, RuleTree*>());
         return substitute(env, apply -> sub_rules[1],  subs);
     }
-
     // Rule could not be applied, so throw an error
     throw "GeneralizeError: Can only apply rules with --> or --<> (or incorrect direction)";
 }
@@ -271,7 +270,7 @@ map<string, RuleTree*> generalize(Env *env, RuleTree *general, RuleTree *specifi
         // Checking for variable in type_fixed (requires a substitution)
         // Substitution already made -> check validity
         else if (new_subs.find(general -> rule_value) != new_subs.end()) {
-            if (new_subs[general -> rule_value] == specific) {
+            if (*new_subs[general -> rule_value] == *specific) {
                 return new_subs;
             } else {
                 throw "GeneralizeError: Two variables are incompatible";                

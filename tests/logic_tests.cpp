@@ -392,7 +392,20 @@ TEST_CASE("Simple proof (2 in N)", "[runAskWorker]") {
     REQUIRE(proof == "==> (InNatural (Natural Zero))\nApply rule (--> (InNatural (Natural x)) (InNatural (S (Natural x))))\n\n==> (InNatural (S (Natural Zero)))\nApply rule (--> (InNatural (Natural x)) (InNatural (S (Natural x))))\n\n==> (InNatural (S (S (Natural Zero))))\nApply rule (--<> (InNatural (Natural Two)) (InNatural (S (S (Natural Zero)))))\n\n");
 
     delete to_prove;
-    delete root -> applied_rule;
     delete root;
+    delete env;
+}
+
+// FIXME debug this
+TEST_CASE("Simple generalize", "[generalize]") {
+    Env *env = new Env();
+    parseStatement("source rules/list.rilab", env);
+
+    RuleTree *to_prove = parseRule("InList Five (Push Five Empty)", env);
+    RuleTree *applied = parseRule("InList x (Push x lst3)", env);
+
+    REQUIRE_NOTHROW(generalize(env, applied, to_prove, map<string, RuleTree*>()));
+    delete to_prove;
+    delete applied;
     delete env;
 }

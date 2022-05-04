@@ -31,6 +31,8 @@ struct RuleTree {
      */
     friend ostream &operator<<(ostream &os, RuleTree r);
 
+    friend bool operator==(const RuleTree &fst, const RuleTree &snd);
+
 };
 
 struct Env {

@@ -1,0 +1,21 @@
+declare type List
+declare literal Empty List
+
+declare operator Push List Int List
+declare var lst1 List
+declare var lst2 List
+declare var lst3 List
+
+declare var x Int
+declare var y Int
+
+declare literal Five Int
+
+declare operator InList Bool Int List
+declare rule InList x (Push x lst3)
+declare rule --> (InList x lst1) (InList x (Push y lst1))
+
+declare literal FibList List
+declare rule --> (InList x (Push 1 (Push 2 (Push 3 (Push Five Empty))))) (InList x FibList)
+
+ask InList Five (Push Five Empty)

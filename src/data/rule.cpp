@@ -50,6 +50,19 @@ RuleTree &RuleTree::operator=(const RuleTree &other) {
     return *this;
 }
 
+bool operator==(const RuleTree &fst, const RuleTree &snd) {
+    if (fst.rule_value != snd.rule_value) return false;
+    if (fst.rule_type != snd.rule_type) return false;
+    if (fst.rule_op != snd.rule_op) return false;
+    if (fst.sub_rules.size() != snd.sub_rules.size()) return false;
+
+    for (size_t i = 0; i < fst.sub_rules.size(); i++) {
+        if (!(fst.sub_rules[i] == snd.sub_rules[i])) return false;
+    }
+
+    return true;
+}
+
 RuleTree::~RuleTree() {
     for (RuleTree *r : sub_rules) { 
         delete r;

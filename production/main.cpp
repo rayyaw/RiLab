@@ -128,6 +128,7 @@ int main(int argc, char *argv[]) {
                 tasks -> unlock();
                 results -> unlock();
                 stop_ask = false;
+                env -> type_var_subs = map<string, string>();
 
                 cout << runAsk(env, tasks, results);
             } catch (char const *e) {
