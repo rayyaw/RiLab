@@ -101,7 +101,7 @@ The executable is licensed under CC-BY No-Derivatives 4.0. You are free to use t
 
 The source code is licensed under CC-BY SA NC 4.0. You are free to use, modify, or transform the source code for noncommercial purposes as long as you cite the source.
 
-This utility was made by RileyTech. Since I intend to remain anonymous, but may need to claim credit for this work, anyone capable of producing x such that
+This utility was made by me (rayyaw). Since I intend to remain anonymous, but may need to claim credit for this work, anyone capable of producing x such that
 
 SHA256(x) = d2b57bba7bfa40176a62f0513ded10e1daaea379487ab65de7775bcb8b7bba25
 
